@@ -21,5 +21,12 @@
     "console_detail": 4,
     "clear_events": 1,
     "advanced_event_maker": 1,
-    "safe_mode": 0
+    "safe_mode": 0,
+    "mods": [
+        {
+            "title": "Class Suffix",
+            "description": "Specifies clips by class",
+            "code": "-s '[v]' on 'bm' -u 'General' > -p '[v]' on 'ks'"
+        }
+    ]
 }

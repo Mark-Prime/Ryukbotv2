@@ -74,7 +74,6 @@ def settingRundown():
     """
         Runs all of the settings in one place
     """
-    changed = False
     for key in setting_descriptions:
         ryukbot_settings[key] = checkSetting(key, setting_descriptions[key])
         
@@ -82,6 +81,9 @@ def settingRundown():
     for key in ryukbot_settings:
         if ryukbot_settings[key] == True or ryukbot_settings[key] == False:
             printSettings[key] = 1 if ryukbot_settings[key] else 0
+        
+    if not 'mods' in ryukbot_settings:
+        ryukbot_settings['mods'] = []
         
     with open(Path('ryukbot_settings.json'), 'w+') as f:
         json.dump(ryukbot_settings, f, indent=4)
@@ -159,6 +161,9 @@ def printVDM(VDM, demoName, startTick, endTick, suffix, lastTick, vdmCount, mod_
         if 'modSpectate' in mod_effects:
             commands = f'{commands} spec_player {mod_effects["modSpectate"]}; spec_mode;'
             endCommands = f'{endCommands}; spec_mode; spec_mode'
+        elif 'modSpectateThird' in mod_effects:
+            commands = f'{commands} spec_player {mod_effects["modSpectate"]}; spec_mode; spec_mode;'
+            endCommands = f'{endCommands}; spec_mode'
             
         # Writes the bulk of the startmovie command
         VDM.write('factory "PlayCommands"\n\t\tname "record_start"\n\t\tstarttick "%s"\n\t\tcommands "%s startmovie %s_%s-%s_%s %s; clear"\n\t}\n'
@@ -429,12 +434,10 @@ def ryukbot():
                         VDM.write('demoactions\n{\n')
                         
                         while i < len(demoEvents):
-                            mod_effects = {}
-                            
                             event = demoEvents[i]
                             killstreakCount = killstreakCounter(event, 0)
 
-                            mod_effects = checkMods(ryukbot_settings, event, mod_effects)
+                            mod_effects = checkMods(ryukbot_settings, event, {})
                             
                             if event[1].lower() == 'bookmark':
                                 bookmark = True

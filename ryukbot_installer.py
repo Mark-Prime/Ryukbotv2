@@ -97,4 +97,8 @@ def ryukbotInstaller(setting_descriptions):
     for key in setting_descriptions:
         newSettings[key] = installerText(setting_descriptions[key], key)
         os.system('cls')
+        
+    if not 'mods' in newSettings:
+        newSettings['mods'] = []
+        
     return newSettings
