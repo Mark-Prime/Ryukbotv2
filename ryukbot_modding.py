@@ -35,6 +35,8 @@ modOptions = {
     "end_commands": "modEndCommands",
     "endcommands": "modEndCommands",
     "-ec": "modEndCommands",
+    "extend": "modExtend",
+    "-e": "modExtend",
 }
 
 #! MOD COMMANDS DOCUMENTATION
@@ -43,6 +45,7 @@ modOptions = {
 # commands      run         Runs tf2 console commands when the clip starts
 # crosshair     -ch         Enable or disable crosshair
 # endcommands   -ec         Runs tf2 console commands when the clip ends (same as runafter)
+# extend        -e          Adds extra time to the end of the recording
 # framerate     fps         Changes the fps of the clip
 # hud                       Enable or disable hud
 # prefix        -p          Add text to the beginning of a clip
@@ -70,6 +73,26 @@ modOptions = {
 
 def getModOptions():
     return modOptions
+
+
+
+def validateCode(condition, value, event):
+    if condition == ' value ' or condition == ' -v ':
+        if (event[2].lower() == value) or (value == '*'):
+            return True
+    elif condition == ' unless ' or condition == ' -u ':
+        if not event[2].lower() == value:
+            return True
+    elif condition == ' includes ' or condition == ' -i ':
+        if value in event[2].lower():
+            return True
+    elif condition == ' discludes ' or condition == ' -d ':
+        if not value in event[2].lower():
+            return True
+    else: 
+        return False
+        
+        
 
 def runMod(code, event, mod_properties, type, valid):
     #* These are the results of the regex
@@ -100,25 +123,41 @@ def runMod(code, event, mod_properties, type, valid):
             if code.group(5) is None:
                 valid = True
             else:
+                codeValue = code.group(5).lower().replace("'", "")
                 # checks if it should run when it matches or when it doesnt match
-                if code.group(4) == ' value ' or code.group(4) == ' -v ':
-                    if (event[2].lower() == code.group(5).lower().replace("'", "")) or (code.group(5).lower().replace("'", "") == '*'):
-                        valid = True
-                elif code.group(4) == ' unless ' or code.group(4) == ' -u ':
-                    if not event[2].lower() == code.group(5).lower().replace("'", ""):
-                        valid = True
+                if '&' in codeValue: 
+                    valueSplit = codeValue.split('&')
+                    for value in valueSplit:
+                        valid = validateCode(code.group(4), value, event)
+                        if not valid:
+                            break
+                elif '|' in codeValue:
+                    valueSplit = codeValue.split('|')
+                    for value in valueSplit:
+                        valid = validateCode(code.group(4), value, event)
+                        if valid:
+                            break
+                else:
+                    valid = validateCode(code.group(4), codeValue, event)
             
             # run if fully valid on all ends
             if valid:
+                # rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | discludes | -i | -d )?(\'(.*)\')?", re.IGNORECASE)
                 if code.group(2).lower() == '[type]' or code.group(2).lower() == '[t]':
                     mod_properties[modOptions[command]] = event[1]
                 elif code.group(2).lower() == '[value]' or code.group(2).lower() == '[v]':
                     mod_properties[modOptions[command]] = event[2]
+                elif code.group(2).lower() == '[firstvalue]' or code.group(2).lower() == '[fv]':
+                    splitEvent = event[2].split(' ')
+                    mod_properties[modOptions[command]] = splitEvent[0]
+                elif code.group(2).lower() == '[lastvalue]' or code.group(2).lower() == '[lv]':
+                    splitEvent = event[2].split(' ')
+                    mod_properties[modOptions[command]] = splitEvent[len(splitEvent) - 1]
                 else:
                     mod_properties[modOptions[command]] = code.group(2)
 
 def checkMods(ryukbot_settings, event, mod_properties):
-    rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u )?(\'(.*)\')?", re.IGNORECASE)
+    rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | discludes | -i | -d )?(\'(.*)\')?", re.IGNORECASE)
     if "mods" in ryukbot_settings:
         for mod in ryukbot_settings["mods"]:
             try: 

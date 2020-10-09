@@ -24,9 +24,9 @@
     "safe_mode": 0,
     "mods": [
         {
-            "title": "Class Suffix",
-            "description": "Specifies clips by class",
-            "code": "-s '[v]' on 'bm' -u 'General' > -p '[v]' on 'ks'"
+            "title": "Exec configBackup.cfg",
+            "description": "execs configBackup.cfg when the clip ends",
+            "code": "-e '69' on 'bm' value 'Other'"
         }
     ]
 }

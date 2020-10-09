@@ -153,10 +153,10 @@ def printVDM(VDM, demoName, startTick, endTick, suffix, lastTick, vdmCount, mod_
         
         
         if 'modPrefix' in mod_effects:
-            demoName = f'{mod_effects["modPrefix"]}_{demoName}'
+            demoName = f'{mod_effects["modPrefix"].replace(" ", "-")}_{demoName}'
             
         if 'modSuffix' in mod_effects:
-            suffix = f'{suffix}_{mod_effects["modSuffix"]}'
+            suffix = f'{suffix}_{mod_effects["modSuffix"].replace(" ", "-")}'
             
         if 'modSpectate' in mod_effects:
             commands = f'{commands} spec_player {mod_effects["modSpectate"]}; spec_mode;'
@@ -444,6 +444,7 @@ def ryukbot():
                             
                             startTick = int(event[4]) - ticksPrior(event)
                             endTick = int(event[4]) + ticksAfter(event)
+                            endTick += int(mod_effects['modExtend']) if "modExtend" in mod_effects else 0
                             
                             checkNext = True
                             tapCount = 0
@@ -459,6 +460,7 @@ def ryukbot():
                                         killstreakCount =  killstreakCounter(demoEvents[i+1], killstreakCount)
                                         # Sets a new end tick
                                         endTick = int(demoEvents[i+1][4]) + ticksAfter(demoEvents[i+1])
+                                        endTick += int(mod_effects['modExtend']) if "modExtend" in mod_effects else 0
                                         mod_effects = checkMods(ryukbot_settings, demoEvents[i+1], mod_effects)
                                         # Incriments i to show that line has been parsed already
                                         i += 1
@@ -492,9 +494,9 @@ def ryukbot():
                                 "mod_effects": mod_effects
                             })
                             
-                            displayDemoName = f'{mod_effects["modPrefix"]}_{demoName}' if 'modPrefix' in mod_effects else demoName
+                            displayDemoName = f'{mod_effects["modPrefix"].replace(" ", "-")}_{demoName}' if 'modPrefix' in mod_effects else demoName
                             
-                            displaySuffix = f'{suffix}_{mod_effects["modSuffix"]}' if 'modSuffix' in mod_effects else suffix
+                            displaySuffix = f'{suffix}_{mod_effects["modSuffix"].replace(" ", "-")}' if 'modSuffix' in mod_effects else suffix
                                 
                             dprint(ryukbot_settings, f'Clip {clipCount}: {displayDemoName}_{startTick}-{endTick}_{displaySuffix}', 'cyan', 2)
                             
@@ -583,7 +585,7 @@ if Path('ryukbot_settings.json').is_file():
     try:
         ryukbot_settings = json.load(open('ryukbot_settings.json'))
     except:
-        eprint(ryukbot_settings, 'Error loading ryukbot_settings.json\nYou might\'ve failed the install process.\nPlease delete ryukbot_settings.json and restart it', 195)
+        eprint({"console_detail": 4}, 'Error loading ryukbot_settings.json\nYou might\'ve failed the install process.\nPlease delete ryukbot_settings.json and restart ryukbot', 195)
 
     ## Ignore this
     dprint(ryukbot_settings, f'FUNNY HAHA ENABLED', 'magenta', 68)
