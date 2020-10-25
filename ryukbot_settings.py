@@ -5,6 +5,11 @@ def descriptions():
         "default": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\tf",
         "type": "string"
     },
+    "output_folder": {
+        "description": 'Which folder inside of the \\tf folder to put the output video in.',
+        "default": "",
+        "type": "string"
+    },
     "framerate": {
         "description": 'The framerate you would like to record at\n(Stick to standard framerates: 30, 60, 120, 240)',
         "default": 60,
@@ -113,6 +118,11 @@ def descriptions():
     "safe_mode": {
         "description": 'Enabling will prevent you from being able to overwrite previously made VDM files.',
         "default": 0,
+        "type": "boolean"
+    },
+    "snd_fix": {
+        "description": 'Helps fix audio issues caused by skipping around in a demo.',
+        "default": 1,
         "type": "boolean"
     },
 }

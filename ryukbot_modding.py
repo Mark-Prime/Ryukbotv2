@@ -23,6 +23,8 @@ modOptions = {
     "voice_chat": "modVoice_chat",
     "voicechat": "modVoice_chat",
     "-vc": "modVoice_chat",
+    "output": "modOutput",
+    "-o": "modOutput",
     "spectate": "modSpectate",
     "-sp": "modSpectate",
     "specfirst": "modSpectate",
@@ -49,6 +51,7 @@ modOptions = {
 # framerate     fps         Changes the fps of the clip
 # hud                       Enable or disable hud
 # prefix        -p          Add text to the beginning of a clip
+# output        -o          The folder to output this clip to
 # runafter      -ra         Runs tf2 console commands when the clip ends (same as endcommands)
 # specfirst     -s1         Spectate a specific player in an stv demo in firstperson (same as spectate)
 # spectate      -sp         Spectate a specific player in an stv demo (same as specfirst)
@@ -61,6 +64,8 @@ modOptions = {
 # Value         Shortcut    Descrption
 
 # [value]       [v]         Whatever the value of the bookmark or killstreak is
+# [lastvalue]   [lv]        Whatever the last value/word of the bookmark or killstreak is 
+# [firstvalue]  [fv]        Whatever the first value/word of the bookmark or killstreak is
 # [type]        [t]         If its a killstreak or bookmark
 
 #! MOD ACTIVATOR DOCUMENTATION
@@ -75,7 +80,6 @@ def getModOptions():
     return modOptions
 
 
-
 def validateCode(condition, value, event):
     if condition == ' value ' or condition == ' -v ':
         if (event[2].lower() == value) or (value == '*'):
@@ -86,12 +90,11 @@ def validateCode(condition, value, event):
     elif condition == ' includes ' or condition == ' -i ':
         if value in event[2].lower():
             return True
-    elif condition == ' discludes ' or condition == ' -d ':
+    elif condition == ' excludes ' or condition == ' -x ':
         if not value in event[2].lower():
             return True
     else: 
-        return False
-        
+        return False   
         
 
 def runMod(code, event, mod_properties, type, valid):
@@ -151,7 +154,9 @@ def runMod(code, event, mod_properties, type, valid):
                     splitEvent = event[2].split(' ')
                     mod_properties[modOptions[command]] = splitEvent[0]
                 elif code.group(2).lower() == '[lastvalue]' or code.group(2).lower() == '[lv]':
+                    print(event[2])
                     splitEvent = event[2].split(' ')
+                    print(splitEvent)
                     mod_properties[modOptions[command]] = splitEvent[len(splitEvent) - 1]
                 else:
                     mod_properties[modOptions[command]] = code.group(2)

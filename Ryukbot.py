@@ -19,7 +19,7 @@ from ryukbot_modding import checkMods, getModOptions
 # Activates the color in the console without this there would be no colors
 colorama.init()
 
-ryukbot_version = 'v2.0.7'
+ryukbot_version = 'v2.0.9'
 
 # Color Coding ruleset:
 # grey: 
@@ -125,9 +125,16 @@ def printVDM(VDM, demoName, startTick, endTick, suffix, lastTick, vdmCount, mod_
     framerate = mod_effects["modFramerate"] if "modFramerate" in mod_effects else ryukbot_settings["framerate"]
     crosshair = mod_effects["modCrosshair"] if "modCrosshair" in mod_effects else ryukbot_settings["crosshair"]
     hud = mod_effects["modHud"] if "modHud" in mod_effects else ryukbot_settings["HUD"]
+    outputFolder = mod_effects["modOutput"] if "modOutput" in mod_effects else ryukbot_settings["output_folder"]
+    snd_fix = mod_effects["modSnd_fix"] if "modSnd_fix" in mod_effects else ryukbot_settings["snd_fix"]
     text_chat = mod_effects["modText_chat"] if "modText_chat" in mod_effects else ryukbot_settings["text_chat"]
     voice_chat = mod_effects["modVoice_chat"] if "modVoice_chat" in mod_effects else ryukbot_settings["voice_chat"]
     endCommands = mod_effects["modEndCommands"] if "modEndCommands" in mod_effects else ryukbot_settings["end_commands"]
+    
+    outputPath = Path(f'{ryukbot_settings["tf_folder"]}\{outputFolder}')
+    
+    if not outputPath.exists():
+        os.mkdir(outputPath)
     
     
     # Starts the new command line
@@ -142,14 +149,14 @@ def printVDM(VDM, demoName, startTick, endTick, suffix, lastTick, vdmCount, mod_
     
     # sets the chatTime based on the settings
     if text_chat:
-        chatTime = 0
-    else:
         chatTime = 12
+    else:
+        chatTime = 0
         
     # Creates the commands to later be written in the VDM file.
     try:
         preCommands = f' {mod_effects["modCommands"]}; {ryukbot_settings["commands"]}; ' if 'modCommands' in mod_effects else f' {ryukbot_settings["commands"]}; '
-        commands = f'hud_saytext_time {chatTime}; voice_enable {1 if voice_chat else 0}; crosshair {1 if crosshair else 0}; cl_drawhud {1 if hud else 0}; host_framerate {framerate};{preCommands}'
+        commands = f'{"snd_soundmixer Default_mix; " if snd_fix else ""}hud_saytext_time {chatTime}; voice_enable {1 if voice_chat else 0}; crosshair {1 if crosshair else 0}; cl_drawhud {1 if hud else 0}; host_framerate {framerate};{preCommands}'
         
         
         if 'modPrefix' in mod_effects:
@@ -164,6 +171,9 @@ def printVDM(VDM, demoName, startTick, endTick, suffix, lastTick, vdmCount, mod_
         elif 'modSpectateThird' in mod_effects:
             commands = f'{commands} spec_player {mod_effects["modSpectate"]}; spec_mode; spec_mode;'
             endCommands = f'{endCommands}; spec_mode'
+            
+        if not outputFolder == '':
+            demoName = f'{outputFolder}\{demoName}'
             
         # Writes the bulk of the startmovie command
         VDM.write('factory "PlayCommands"\n\t\tname "record_start"\n\t\tstarttick "%s"\n\t\tcommands "%s startmovie %s_%s-%s_%s %s; clear"\n\t}\n'

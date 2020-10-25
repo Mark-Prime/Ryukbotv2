@@ -59,7 +59,7 @@ def tickInput(eventFileName, demoName, ticks, advancedOptions):
                 cprint(f'{eventFileName} Maker\n', 'cyan')
                 print('The name you want to give the clip')
                 print('Default: General\n')
-                tick['Type'] = input(f'Type: ').replace(" ", "_")
+                tick['Type'] = input(f'Type: ')
                 if tick['Type'] == '':
                     tick['Type'] = 'General'
             else:

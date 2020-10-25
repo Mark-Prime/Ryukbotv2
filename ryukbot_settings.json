@@ -22,11 +22,13 @@
     "clear_events": 1,
     "advanced_event_maker": 1,
     "safe_mode": 0,
+    "snd_fix": 1,
     "mods": [
         {
             "title": "Exec configBackup.cfg",
             "description": "execs configBackup.cfg when the clip ends",
-            "code": "-e '69' on 'bm' value 'Other'"
+            "code": "suffix '[v]' on 'bm' unless 'General' > -o '[v]' on 'bm' excludes 'General&spec'"
         }
-    ]
+    ],
+    "output_folder": ""
 }
