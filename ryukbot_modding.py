@@ -4,7 +4,7 @@ from sprint import *
 # Activates the color in the console without this there would be no colors
 colorama.init()
 
-modOptions = {
+mod_options = {
     "prefix": "modPrefix",
     "-p": "modPrefix",
     "suffix": "modSuffix",
@@ -76,11 +76,11 @@ modOptions = {
 # *                         All clips no matter what it is
 
 
-def getModOptions():
-    return modOptions
+def get_mod_options():
+    return mod_options
 
 
-def validateCode(condition, value, event):
+def validate_code(condition, value, event):
     if condition == ' value ' or condition == ' -v ':
         if (event[2].lower() == value) or (value == '*'):
             return True
@@ -97,7 +97,7 @@ def validateCode(condition, value, event):
         return False   
         
 
-def runMod(code, event, mod_properties, type, valid):
+def run_mod(code, event, mod_properties, type, valid):
     #* These are the results of the regex
     # code.group()  =>  suffix 'LOL' on 'killstreak' value '69'
     # code.group(1) =>  suffix
@@ -108,16 +108,16 @@ def runMod(code, event, mod_properties, type, valid):
     
     # If any code was found at all
     command = code.group(1).replace(' ','').lower()
-    if command in modOptions if code.group() else False:
+    if command in mod_options if code.group() else False:
         
         # Check if the type matches the type of the clip
-        codeLower = code.group(3).lower()
-        eventLower = event[1].lower()
-        if ((codeLower == 'bookmark' or codeLower == 'bm') and eventLower == 'bookmark'):
+        code_lower = code.group(3).lower()
+        event_lower = event[1].lower()
+        if ((code_lower == 'bookmark' or code_lower == 'bm') and event_lower == 'bookmark'):
             type = True
-        elif ((codeLower == 'killstreak' or codeLower == 'ks') and (eventLower == 'killstreak' or eventLower == 'kill')):
+        elif ((code_lower == 'killstreak' or code_lower == 'ks') and (event_lower == 'killstreak' or event_lower == 'kill')):
             type = True
-        elif (codeLower == '*'):
+        elif (code_lower == '*'):
             type = True
         
         # Only run if the types match
@@ -126,55 +126,55 @@ def runMod(code, event, mod_properties, type, valid):
             if code.group(5) is None:
                 valid = True
             else:
-                codeValue = code.group(5).lower().replace("'", "")
+                code_value = code.group(5).lower().replace("'", "")
                 # checks if it should run when it matches or when it doesnt match
-                if '&' in codeValue: 
-                    valueSplit = codeValue.split('&')
-                    for value in valueSplit:
-                        valid = validateCode(code.group(4), value, event)
+                if '&' in code_value: 
+                    value_split = code_value.split('&')
+                    for value in value_split:
+                        valid = validate_code(code.group(4), value, event)
                         if not valid:
                             break
-                elif '|' in codeValue:
-                    valueSplit = codeValue.split('|')
-                    for value in valueSplit:
-                        valid = validateCode(code.group(4), value, event)
+                elif '|' in code_value:
+                    value_split = code_value.split('|')
+                    for value in value_split:
+                        valid = validate_code(code.group(4), value, event)
                         if valid:
                             break
                 else:
-                    valid = validateCode(code.group(4), codeValue, event)
+                    valid = validate_code(code.group(4), code_value, event)
             
             # run if fully valid on all ends
             if valid:
                 # rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | discludes | -i | -d )?(\'(.*)\')?", re.IGNORECASE)
                 if code.group(2).lower() == '[type]' or code.group(2).lower() == '[t]':
-                    mod_properties[modOptions[command]] = event[1]
+                    mod_properties[mod_options[command]] = event[1]
                 elif code.group(2).lower() == '[value]' or code.group(2).lower() == '[v]':
-                    mod_properties[modOptions[command]] = event[2]
+                    mod_properties[mod_options[command]] = event[2]
                 elif code.group(2).lower() == '[firstvalue]' or code.group(2).lower() == '[fv]':
-                    splitEvent = event[2].split(' ')
-                    mod_properties[modOptions[command]] = splitEvent[0]
+                    split_event = event[2].split(' ')
+                    mod_properties[mod_options[command]] = split_event[0]
                 elif code.group(2).lower() == '[lastvalue]' or code.group(2).lower() == '[lv]':
                     print(event[2])
-                    splitEvent = event[2].split(' ')
-                    print(splitEvent)
-                    mod_properties[modOptions[command]] = splitEvent[len(splitEvent) - 1]
+                    split_event = event[2].split(' ')
+                    print(split_event)
+                    mod_properties[mod_options[command]] = split_event[len(split_event) - 1]
                 else:
-                    mod_properties[modOptions[command]] = code.group(2)
+                    mod_properties[mod_options[command]] = code.group(2)
 
-def checkMods(ryukbot_settings, event, mod_properties):
+def check_mods(ryukbot_settings, event, mod_properties):
     rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | discludes | -i | -d )?(\'(.*)\')?", re.IGNORECASE)
     if "mods" in ryukbot_settings:
         for mod in ryukbot_settings["mods"]:
             try: 
                 if ">" in mod["code"]:
-                    codeSplit = mod['code'].split('>')
-                    for codeItem in codeSplit:
-                        if not codeItem.replace(' ','') == '':
-                            code = rbcParse.search(codeItem)
-                            runMod(code, event, mod_properties, False, False)
+                    code_split = mod['code'].split('>')
+                    for code_item in code_split:
+                        if not code_item.replace(' ','') == '':
+                            code = rbcParse.search(code_item)
+                            run_mod(code, event, mod_properties, False, False)
                 else: 
                     code = rbcParse.search(mod["code"])
-                    runMod(code, event, mod_properties, False, False)
+                    run_mod(code, event, mod_properties, False, False)
             except: 
                 eprint(ryukbot_settings, 'Mod lacking code or it is incorrectly coded', 431)
             

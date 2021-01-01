@@ -8,14 +8,14 @@ from termcolor import cprint
 colorama.init()
 
 
-def printEvents(eventFile, demo):
+def print_events(event_file, demo):
     """Prints the events to the _events.txt file
 
     Args:
-        eventFile (Path): The path to the file itself that will be added too
+        event_file (Path): The path to the file itself that will be added too
         demo (List): The list of ticks in the demo
     """
-    _event = open(eventFile, 'a')
+    _event = open(event_file, 'a')
     
     # Seperates the demos in the file
     _event.write('>\n')
@@ -28,35 +28,35 @@ def printEvents(eventFile, demo):
     _event.close()
     
 
-def tickInput(eventFileName, demoName, ticks, advancedOptions):
+def tick_input(event_file_name, demo_name, ticks, advanced_options):
     """Gets the inputs for the specific ticks in each demo with possible advanced options
 
     Args:
-        eventFileName (String): The name of the file for the header
-        demoName (String): The name of the demo
+        event_file_name (String): The name of the file for the header
+        demo_name (String): The name of the demo
         ticks (List): List of ticks already made
-        advancedOptions (Int): If the advanced options setting is enabled
+        advanced_options (Int): If the advanced options setting is enabled
 
     Returns:
         List: The list of ticks listed for recording
     """
     ##TODO: improve user interface
-    cprint(f'{eventFileName} Maker\n', 'cyan')
+    cprint(f'{event_file_name} Maker\n', 'cyan')
     tick = {
-        "Name": demoName,
+        "Name": demo_name,
         "Date": (f'{str(dt.now().date()).replace("-", "/")} {str(dt.now().time()).split(".")[0]}')
     }
     try:
         print('The tick of the event you want recorded')
         print('1000 ticks is about 15 seconds\n')
-        tickNum = input(f'tick #{len(ticks) + 1}: ')
-        if tickNum == '':
+        tick_num = input(f'tick #{len(ticks) + 1}: ')
+        if tick_num == '':
             return ticks
         else:
-            tick['Number'] = int(tickNum)
-            if advancedOptions == 1:
+            tick['Number'] = int(tick_num)
+            if advanced_options == 1:
                 os.system('cls')
-                cprint(f'{eventFileName} Maker\n', 'cyan')
+                cprint(f'{event_file_name} Maker\n', 'cyan')
                 print('The name you want to give the clip')
                 print('Default: General\n')
                 tick['Type'] = input(f'Type: ')
@@ -67,19 +67,19 @@ def tickInput(eventFileName, demoName, ticks, advancedOptions):
             
             ticks.append(tick)
             os.system('cls')
-            return tickInput(eventFileName, demoName, ticks, advancedOptions)
+            return tick_input(event_file_name, demo_name, ticks, advanced_options)
     except:
         os.system('cls')
         cprint('Please only use numbers')
-        return tickInput(eventFileName, demoName, ticks, advancedOptions)
+        return tick_input(event_file_name, demo_name, ticks, advanced_options)
 
-def _eventMaker(eventFile, eventFileName, advancedOptions):
+def _event_maker(event_file, event_file_name, advanced_options):
     """Gives the user the ability to make thier own events easily
 
     Args:
-        eventFile (Path): The events file itself
-        eventFileName (String): The name of the file
-        advancedOptions (Int): The option to disable or enable the advanced option
+        event_file (Path): The events file itself
+        event_file_name (String): The name of the file
+        advanced_options (Int): The option to disable or enable the advanced option
 
     Returns:
         Boolean: Returns true if printing went through with no issues
@@ -89,17 +89,17 @@ def _eventMaker(eventFile, eventFileName, advancedOptions):
     repeat = True
     demos = []
     while repeat:
-        cprint(f'{eventFileName} Maker', 'cyan')
-        demoName = input('Demoname: ')
-        if demoName == '':
+        cprint(f'{event_file_name} Maker', 'cyan')
+        demo_name = input('Demoname: ')
+        if demo_name == '':
             repeat = False
         else:
             os.system('cls')
-            demos.append(tickInput(eventFileName, demoName, [], advancedOptions))
+            demos.append(tick_input(event_file_name, demo_name, [], advanced_options))
             
     for demo in demos:
-        sortedDemo = sorted(demo, key=lambda k: k['Number']) 
-        printEvents(eventFile, sortedDemo)
+        sorted_demo = sorted(demo, key=lambda k: k['Number']) 
+        print_events(event_file, sorted_demo)
         
         
     return True

@@ -11,15 +11,18 @@ from random import randint
 from termcolor import cprint
 from ryukbot_installer import *
 import ryukbot_settings
-from ryukbot_maker import _eventMaker
+from ryukbot_maker import _event_maker
 from yesNo import yesNo
 from sprint import *
-from ryukbot_modding import checkMods, getModOptions
+from ryukbot_modding import check_mods, get_mod_options
+from classes.clip import Clip
+from classes.event import Event
+from classes.mod import Mod
 
 # Activates the color in the console without this there would be no colors
 colorama.init()
 
-ryukbot_version = 'v2.0.9'
+ryukbot_version = 'v2.1.0'
 
 # Color Coding ruleset:
 # grey: 
@@ -32,10 +35,10 @@ ryukbot_version = 'v2.0.9'
 # white:    Normal paragraph messages/descriptions of things
 
 setting_descriptions = ryukbot_settings.descriptions()
-modOptions = getModOptions()
+mod_options = get_mod_options()
     
 
-def checkSetting(setting, setting_descriptions):
+def check_setting(setting, setting_descriptions):
     """Checks the settings file and makes sure its all valid
 
     Args:
@@ -70,12 +73,12 @@ def checkSetting(setting, setting_descriptions):
         # eprint(ryukbot_settings, f'{setting} is missing from ryukbot_settings.json\nDefault value is: {setting_descriptions["default"]}', 201)
         return missingSettingText(setting_descriptions, setting)
         
-def settingRundown():
+def setting_rundown():
     """
         Runs all of the settings in one place
     """
     for key in setting_descriptions:
-        ryukbot_settings[key] = checkSetting(key, setting_descriptions[key])
+        ryukbot_settings[key] = check_setting(key, setting_descriptions[key])
         
     printSettings = ryukbot_settings
     for key in ryukbot_settings:
@@ -88,155 +91,155 @@ def settingRundown():
     with open(Path('ryukbot_settings.json'), 'w+') as f:
         json.dump(ryukbot_settings, f, indent=4)
         
-# Writes the start of a new command and adds one to the vdmCount variable
-def newCommand(vdmCount, VDM):
+# Writes the start of a new command and adds one to the vdm_count variable
+def new_command(vdm_count, VDM):
     """Starts the initial command writing that is the same with all vdm commands
 
     Args:
-        vdmCount (int):     The amount of vdm commands there are
+        vdm_count (int):     The amount of vdm commands there are
         VDM (file):         The VDM file being written to
 
     Returns:
         int: The count with one more to account for the one just added
     """
-    VDM.write('\t"%s"\n\t{\n\t\t' % (vdmCount))
-    return vdmCount + 1
+    VDM.write('\t"%s"\n\t{\n\t\t' % (vdm_count))
+    return vdm_count + 1
 
 # Prints the body of the vdm for each clip to be recorded
-def printVDM(VDM, demoName, startTick, endTick, suffix, lastTick, vdmCount, mod_effects):
+def print_VDM(VDM, demo_name, start_tick, end_tick, suffix, last_tick, vdm_count, mod_effects):
     """Prints the body of the vdm for each clip to be recorded
 
     Args:
         VDM (file):         The file being written to
-        demoName (string):  The name of the demo file minus the extension
-        startTick (int):    The tick the recording itself starts at
-        endTick (int):      The tick the recording ends at
+        demo_name (string):  The name of the demo file minus the extension
+        start_tick (int):    The tick the recording itself starts at
+        end_tick (int):      The tick the recording ends at
         suffix (string):    A string to add to the end of the clips filename
-        lastTick (int):     The previous endTick
-        vdmCount (int):     A count of how many vdm commands have been written
+        last_tick (int):     The previous end_tick
+        vdm_count (int):     A count of how many vdm commands have been written
 
     Returns:
-        int:    It returns the vdmCount at the end of the function so everything
+        int:    It returns the vdm_count at the end of the function so everything
                 remains  consistent in that area throughout the entire 
                 vdm printing process.
     """
     
     
-    framerate = mod_effects["modFramerate"] if "modFramerate" in mod_effects else ryukbot_settings["framerate"]
-    crosshair = mod_effects["modCrosshair"] if "modCrosshair" in mod_effects else ryukbot_settings["crosshair"]
-    hud = mod_effects["modHud"] if "modHud" in mod_effects else ryukbot_settings["HUD"]
-    outputFolder = mod_effects["modOutput"] if "modOutput" in mod_effects else ryukbot_settings["output_folder"]
-    snd_fix = mod_effects["modSnd_fix"] if "modSnd_fix" in mod_effects else ryukbot_settings["snd_fix"]
-    text_chat = mod_effects["modText_chat"] if "modText_chat" in mod_effects else ryukbot_settings["text_chat"]
-    voice_chat = mod_effects["modVoice_chat"] if "modVoice_chat" in mod_effects else ryukbot_settings["voice_chat"]
-    endCommands = mod_effects["modEndCommands"] if "modEndCommands" in mod_effects else ryukbot_settings["end_commands"]
+    framerate = mod_effects["mod_framerate"] if "mod_framerate" in mod_effects else ryukbot_settings["framerate"]
+    crosshair = mod_effects["mod_crosshair"] if "mod_crosshair" in mod_effects else ryukbot_settings["crosshair"]
+    hud = mod_effects["mod_hud"] if "mod_hud" in mod_effects else ryukbot_settings["HUD"]
+    outputFolder = mod_effects["mod_output"] if "mod_output" in mod_effects else ryukbot_settings["output_folder"]
+    snd_fix = mod_effects["mod_snd_fix"] if "mod_snd_fix" in mod_effects else ryukbot_settings["snd_fix"]
+    text_chat = mod_effects["mod_text_chat"] if "mod_text_chat" in mod_effects else ryukbot_settings["text_chat"]
+    voice_chat = mod_effects["mod_voice_chat"] if "mod_voice_chat" in mod_effects else ryukbot_settings["voice_chat"]
+    end_commands = mod_effects["mod_end_commands"] if "mod_end_commands" in mod_effects else ryukbot_settings["end_commands"]
     
-    outputPath = Path(f'{ryukbot_settings["tf_folder"]}\{outputFolder}')
+    output_path = Path(f'{ryukbot_settings["tf_folder"]}\{outputFolder}')
     
-    if not outputPath.exists():
-        os.mkdir(outputPath)
+    if not output_path.exists():
+        os.mkdir(output_path)
     
     
     # Starts the new command line
     try:
-        vdmCount = newCommand(vdmCount, VDM)
+        vdm_count = new_command(vdm_count, VDM)
         VDM.write('factory "SkipAhead"\n\t\tname "skip"\n\t\tstarttick "%s"\n\t\tskiptotick "%s"\n\t}\n'
-                % (lastTick, startTick - 100))
+                % (last_tick, start_tick - 100))
         
-        vdmCount = newCommand(vdmCount, VDM)
+        vdm_count = new_command(vdm_count, VDM)
     except:
-        eprint(ryukbot_settings, f'Error printing to {demoName}.vdm', 372)
+        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 372)
     
-    # sets the chatTime based on the settings
+    # sets the chat_time based on the settings
     if text_chat:
-        chatTime = 12
+        chat_time = 12
     else:
-        chatTime = 0
+        chat_time = 0
         
     # Creates the commands to later be written in the VDM file.
     try:
-        preCommands = f' {mod_effects["modCommands"]}; {ryukbot_settings["commands"]}; ' if 'modCommands' in mod_effects else f' {ryukbot_settings["commands"]}; '
-        commands = f'{"snd_soundmixer Default_mix; " if snd_fix else ""}hud_saytext_time {chatTime}; voice_enable {1 if voice_chat else 0}; crosshair {1 if crosshair else 0}; cl_drawhud {1 if hud else 0}; host_framerate {framerate};{preCommands}'
+        pre_commands = f' {mod_effects["mod_commands"]}; {ryukbot_settings["commands"]}; ' if 'mod_commands' in mod_effects else f' {ryukbot_settings["commands"]}; '
+        commands = f'{"snd_soundmixer Default_mix; " if snd_fix else ""}hud_saytext_time {chat_time}; voice_enable {1 if voice_chat else 0}; crosshair {1 if crosshair else 0}; cl_drawhud {1 if hud else 0}; host_framerate {framerate};{pre_commands}'
         
         
-        if 'modPrefix' in mod_effects:
-            demoName = f'{mod_effects["modPrefix"].replace(" ", "-")}_{demoName}'
+        if 'mod_prefix' in mod_effects:
+            demo_name = f'{mod_effects["mod_prefix"].replace(" ", "-")}_{demo_name}'
             
-        if 'modSuffix' in mod_effects:
-            suffix = f'{suffix}_{mod_effects["modSuffix"].replace(" ", "-")}'
+        if 'mod_suffix' in mod_effects:
+            suffix = f'{suffix}_{mod_effects["mod_suffix"].replace(" ", "-")}'
             
-        if 'modSpectate' in mod_effects:
-            commands = f'{commands} spec_player {mod_effects["modSpectate"]}; spec_mode;'
-            endCommands = f'{endCommands}; spec_mode; spec_mode'
-        elif 'modSpectateThird' in mod_effects:
-            commands = f'{commands} spec_player {mod_effects["modSpectate"]}; spec_mode; spec_mode;'
-            endCommands = f'{endCommands}; spec_mode'
+        if 'mod_spectate' in mod_effects:
+            commands = f'{commands} spec_player {mod_effects["mod_spectate"]}; spec_mode;'
+            end_commands = f'{end_commands}; spec_mode; spec_mode'
+        elif 'mod_spectateThird' in mod_effects:
+            commands = f'{commands} spec_player {mod_effects["mod_spectate"]}; spec_mode; spec_mode;'
+            end_commands = f'{end_commands}; spec_mode'
             
         if not outputFolder == '':
-            demoName = f'{outputFolder}\{demoName}'
+            demo_name = f'{outputFolder}\{demo_name}'
             
         # Writes the bulk of the startmovie command
         VDM.write('factory "PlayCommands"\n\t\tname "record_start"\n\t\tstarttick "%s"\n\t\tcommands "%s startmovie %s_%s-%s_%s %s; clear"\n\t}\n'
-                % (startTick, commands, demoName, startTick, endTick, suffix, ryukbot_settings["method"]))
+                % (start_tick, commands, demo_name, start_tick, end_tick, suffix, ryukbot_settings["method"]))
     except: 
-        eprint(ryukbot_settings, f'Error printing to {demoName}.vdm', 373)
+        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 373)
     
     try:
-        vdmCount = newCommand(vdmCount, VDM)
+        vdm_count = new_command(vdm_count, VDM)
         VDM.write('factory "PlayCommands"\n\t\tname "record_stop"\n\t\tstarttick "%s"\n\t\tcommands "%s; endmovie; host_framerate 0"\n\t}\n'
-                % (endTick, endCommands))
+                % (end_tick, end_commands))
     except: 
-        eprint(ryukbot_settings, f'Error printing to {demoName}.vdm', 374)
+        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 374)
     
-    return vdmCount + 1
+    return vdm_count + 1
 
 
-def completeVDM(VDM, nextDemo, lastTick, vdmCount, demoName):
+def complete_VDM(VDM, next_demo, last_tick, vdm_count, demo_name):
     """Ends the VDM file and optionally leads to the next demo if possible or toggled.
 
     Args:
         VDM (file):             The VDM to be written to
-        nextDemo (string):      The name of the demo that happens after the current one.
-        lastTick (int):         The last tick used by the VDM in the printing process
-        vdmCount (int):         The count of vdm commands so far in the vdm
-        demoName (string):      The name of the current demo
+        next_demo (string):      The name of the demo that happens after the current one.
+        last_tick (int):         The last tick used by the VDM in the printing process
+        vdm_count (int):         The count of vdm commands so far in the vdm
+        demo_name (string):      The name of the current demo
     """
     try:
-        if nextDemo == 'end' or not ryukbot_settings["record_continuous"]:
+        if next_demo == 'end' or not ryukbot_settings["record_continuous"]:
             commands = 'quit'
         else: 
-            commands = f'playdemo {nextDemo}'
-        vdmCount = newCommand(vdmCount, VDM)
+            commands = f'playdemo {next_demo}'
+        vdm_count = new_command(vdm_count, VDM)
         VDM.write('factory "PlayCommands"\n\t\tname "VDM end"\n\t\tstarttick "%s"\n\t\tcommands "%s"\n\t}\n}'
-                % (lastTick, commands))
+                % (last_tick, commands))
     except:
-        eprint(ryukbot_settings, f'Error printing to {demoName}.vdm', 379)
+        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 379)
 
 
 # Prints the backups to the folders told to
-def writeBackup(backup_location, eventsPerDemo):
+def write_backup(backup_location, events_per_demo):
     """Prints the backups to the folders its told to
 
     Args:
         backup_location (Path):         The path to the backup .txt file
-        eventsPerDemo (Array/List):     The list of events in each demo
+        events_per_demo (Array/List):     The list of events in each demo
     """
     try: 
         if backup_location.is_file():
-            writeMethod = 'a'
+            write_method = 'a'
         else: 
-            writeMethod = 'w'
+            write_method = 'w'
             
-        with open(backup_location, writeMethod) as backup_file:
+        with open(backup_location, write_method) as backup_file:
             backup_file.write('>\n')
-            for demoEvent in eventsPerDemo:
+            for demoEvent in events_per_demo:
                 # Write the line to the backup
                 backup_file.write('[%s] %s %s ("%s" at %s)\n' % (demoEvent))
     except:
         eprint(ryukbot_settings, 'Error while writing backup', 343)
             
 # Returns the amount of ticks to put before the clip
-def ticksPrior(event):
+def ticks_prior(event):
     """Finds the amount of ticks to put before the clip being analysed
 
     Args:
@@ -251,7 +254,7 @@ def ticksPrior(event):
         return ryukbot_settings['before_bookmark']
       
 # Returns the amount of ticks to put after the clip      
-def ticksAfter(event):
+def ticks_after(event):
     """Finds the amount of ticks to put after the clip being analysed
 
     Args:
@@ -265,49 +268,49 @@ def ticksAfter(event):
     else:
         return ryukbot_settings['after_bookmark']
     
-def killstreakCounter(event, currentCount):
+def killstreak_counter(event, current_count):
     """Counts the amount of kills in each killstreak
 
     Args:
         event (Array/List): A list returned from REGEX showing all the pieces of the event being parsed
-        currentCount (int): The amount of kills in the killstreak already
+        current_count (int): The amount of kills in the killstreak already
 
     Returns:
         int: The amount of kills in the killstreak
     """
     try:
         if event[1].lower() == 'killstreak':
-            if int(event[2]) >= int(currentCount + 1):
+            if int(event[2]) >= int(current_count + 1):
                 return int(event[2])
             else:
-                return currentCount + int(event[2])
+                return current_count + int(event[2])
         elif event[1].lower() == 'kill':
-            if int(event[2].split(':')[1]) >= int(currentCount + 1):
+            if int(event[2].split(':')[1]) >= int(current_count + 1):
                 return int(event[2].split(':')[1])
             else:
-                return currentCount + int(event[2].split(':')[1])
+                return current_count + int(event[2].split(':')[1])
         else:
-            return currentCount
+            return current_count
     except:
         eprint(ryukbot_settings, 'Error counting killstreak amount', 405)
     
 # Counts the amount of time bookmark is tapped
-def tapCounter(event, nextEvent, tapCount):
+def tap_counter(event, next_event, tap_count):
     """Counts the amount of time bookmark is "tapped"
 
     Args:
         event (Array/List): A list returned from REGEX showing all the pieces of the event being parsed
-        nextEvent (Array/List): The event after the current one
-        tapCount (int): The amount of taps already
+        next_event (Array/List): The event after the current one
+        tap_count (int): The amount of taps already
 
     Returns:
         int: The amount of times the bookmark button has been hit
     """
     if event[1].lower() == 'bookmark':
-        if nextEvent[1].lower() == 'bookmark':
-            if int(event[4]) + ryukbot_settings['interval_for_rewind_double_taps'] >= int(nextEvent[4]):
-                tapCount += 1
-    return tapCount
+        if next_event[1].lower() == 'bookmark':
+            if int(event[4]) + ryukbot_settings['interval_for_rewind_double_taps'] >= int(next_event[4]):
+                tap_count += 1
+    return tap_count
         
 # Read _events.txt or killstreaks.txt file 
 def ryukbot():
@@ -319,18 +322,18 @@ def ryukbot():
         
         if Path(tf_folder + '\\demos\\_events.txt').is_file():
             tf_folder = tf_folder + '\\demos'
-            eventFileName = '_events.txt'
+            event_file_name = '_events.txt'
         elif Path(tf_folder + '\\demos\\KillStreaks.txt').is_file():
             tf_folder = tf_folder + '\\demos'
-            eventFileName = 'KillStreaks.txt'
+            event_file_name = 'KillStreaks.txt'
         elif Path(tf_folder + '\\_events.txt').is_file():
-            eventFileName = '_events.txt'
+            event_file_name = '_events.txt'
         elif Path(tf_folder + '\\KillStreaks.txt').is_file():
-            eventFileName = 'KillStreaks.txt'
+            event_file_name = 'KillStreaks.txt'
         else:
             eprint(ryukbot_settings, 'Can not find KillStreaks.txt or _event.txt', 331)
         
-        eventFile = Path(f'{tf_folder}\\{eventFileName}')
+        eventFile = Path(f'{tf_folder}\\{event_file_name}')
             
         with open(eventFile, 'r') as _events:
 
@@ -343,6 +346,7 @@ def ryukbot():
             
             # Combines it into one string and searches it
             eventMarks = lineRegex.findall(''.join(eventLines))
+            carrotCount = len(carrotRegex.findall("".join(eventLines))) + 1
             
             #* The syntax for getting the variables and its information
             # LINE: eventMarks[*]           --- EXAMPLE ('2020/04/27 20:23', 'Killstreak', '3', '2020-04-27_20-16-21', '29017')
@@ -354,12 +358,12 @@ def ryukbot():
             
             # This is used later to check if the demo has changed to the next on the list
             try:
-                demoName = eventMarks[0][3]
+                demo_name = eventMarks[0][3]
             except IndexError:
-                cprint((f"{eventFileName} is empty"), 'red')
-                print(f'Would you like to run the {eventFileName} maker?')
+                cprint((f"{event_file_name} is empty"), 'red')
+                print(f'Would you like to run the {event_file_name} maker?')
                 if yesNo():
-                    if _eventMaker(eventFile, eventFileName, ryukbot_settings['advanced_event_maker']):
+                    if _event_maker(eventFile, event_file_name, ryukbot_settings['advanced_event_maker']):
                         os.system('cls')
                         cprint('Run Ryukbot now?\n', 'cyan')
                         if yesNo():
@@ -373,29 +377,29 @@ def ryukbot():
             
             # Simple message letting the user know the programs progress.
             # More updates to the user are nice but I want to try and limit spam to the user.
-            cprint(f'Scanned {len(eventLines)} different events over the span of {len(carrotRegex.findall("".join(eventLines))) + 1} demos.', 'green')
+            cprint(f'Scanned {len(eventLines)} different events over the span of {carrotCount} demos.', 'green')
             dprint(ryukbot_settings, f'Wow! You don\'t get many kills do you?', 'magenta', 68)
         
-            allEvents = []
-            eventsPerDemo = []
+            all_events = []
+            events_per_demo = []
             # Loops through the list of events in the eventMarks list
             for event in eventMarks:
                 # Checks if part of the same demo
-                if demoName != event[3]:
-                    # Appends to the allEvents list for later use
-                    allEvents.append(eventsPerDemo)
+                if demo_name != event[3]:
+                    # Appends to the all_events list for later use
+                    all_events.append(events_per_demo)
                     
-                    # resets the demoName
-                    demoName = event[3]
+                    # resets the demo_name
+                    demo_name = event[3]
                     
                     # resets the events
-                    eventsPerDemo = []
+                    events_per_demo = []
                 
-                # Appends the current event to the end of the eventsPerDemo list
-                eventsPerDemo.append(event)
+                # Appends the current event to the end of the events_per_demo list
+                events_per_demo.append(event)
                 
-            # Pushes the last demo to the allEvents list as the for loop above doesn't do it
-            allEvents.append(eventsPerDemo)
+            # Pushes the last demo to the all_events list as the for loop above doesn't do it
+            all_events.append(events_per_demo)
             
             
             # Get current directory path and add the backups folder to the end as well as
@@ -410,105 +414,105 @@ def ryukbot():
             date_time = str(dt.now().date()) + '_' + str(dt.now().time()) + '.txt'
             
             
-            demoIndex = 0
-            while demoIndex < len(allEvents):
-                demoEvents = allEvents[demoIndex]
-                demoName = demoEvents[0][3]
+            demo_index = 0
+            while demo_index < len(all_events):
+                demo_events = all_events[demo_index]
+                demo_name = demo_events[0][3]
                 
-                if (demoIndex + 1 < len(allEvents)):
-                    nextDemo = allEvents[demoIndex + 1][0][3]
+                if (demo_index + 1 < len(all_events)):
+                    next_demo = all_events[demo_index + 1][0][3]
                 else:
-                    nextDemo = 'end'
+                    next_demo = 'end'
                 
-                dprint(ryukbot_settings, f'\nScanning demo: {demoName}', 'green', 2)
+                dprint(ryukbot_settings, f'\nScanning demo: {demo_name}', 'green', 2)
                 
                 # The location of the file we want to make
-                backupDemoLocation = Path((str(dir_path) + '\\demos\\' + demoName + '.txt'))
-                backupLocation = Path((str(dir_path) + '\\' + (date_time.replace(':', '-')).split('.')[0] + '.txt'))
+                backup_demo_location = Path((str(dir_path) + '\\demos\\' + demo_name + '.txt'))
+                backup_location = Path((str(dir_path) + '\\' + (date_time.replace(':', '-')).split('.')[0] + '.txt'))
                 
                 # Writes the backups to the files
-                writeBackup(backupDemoLocation, demoEvents)
-                writeBackup(backupLocation, demoEvents)
+                write_backup(backup_demo_location, demo_events)
+                write_backup(backup_location, demo_events)
 
                 i = 0
-                clipCount = 0
+                clip_count = 0
                 bookmark = False
-                vdmPath = Path(tf_folder + '\\' + demoName + '.vdm')
+                vdm_path = Path(tf_folder + '\\' + demo_name + '.vdm')
                 
-                demoTicks = []
+                demo_ticks = []
                 
-                if not (vdmPath.exists() and (ryukbot_settings["safe_mode"])):
-                    with open(vdmPath, 'w+') as VDM:
-                        lastTick = ryukbot_settings['start_delay']
+                if not (vdm_path.exists() and (ryukbot_settings["safe_mode"])):
+                    with open(vdm_path, 'w+') as VDM:
+                        last_tick = ryukbot_settings['start_delay']
                         
                         VDM.write('demoactions\n{\n')
                         
-                        while i < len(demoEvents):
-                            event = demoEvents[i]
-                            killstreakCount = killstreakCounter(event, 0)
+                        while i < len(demo_events):
+                            event = demo_events[i]
+                            killstreak_count = killstreak_counter(event, 0)
 
-                            mod_effects = checkMods(ryukbot_settings, event, {})
+                            mod_effects = check_mods(ryukbot_settings, event, {})
                             
                             if event[1].lower() == 'bookmark':
                                 bookmark = True
                             
-                            startTick = int(event[4]) - ticksPrior(event)
-                            endTick = int(event[4]) + ticksAfter(event)
-                            endTick += int(mod_effects['modExtend']) if "modExtend" in mod_effects else 0
+                            start_tick = int(event[4]) - ticks_prior(event)
+                            end_tick = int(event[4]) + ticks_after(event)
+                            end_tick += int(mod_effects['modExtend']) if "modExtend" in mod_effects else 0
                             
-                            checkNext = True
-                            tapCount = 0
-                            while checkNext:
+                            check_next = True
+                            tap_count = 0
+                            while check_next:
                                 
                                 # Checks that its less than the length of the list
-                                if i+1 < len(demoEvents):
+                                if i+1 < len(demo_events):
                                     # Confirms rewind double taps
-                                    tapCount = tapCounter(event, demoEvents[i+1], tapCount)
+                                    tap_count = tap_counter(event, demo_events[i+1], tap_count)
                                     
-                                    # Checks if endTick is before the start of the next clip
-                                    if endTick >= ((int(demoEvents[i+1][4]) - ticksPrior(demoEvents[i+1])) - ryukbot_settings['minimum_ticks_between_clips']):
-                                        killstreakCount =  killstreakCounter(demoEvents[i+1], killstreakCount)
+                                    # Checks if end_tick is before the start of the next clip
+                                    if end_tick >= ((int(demo_events[i+1][4]) - ticks_prior(demo_events[i+1])) - ryukbot_settings['minimum_ticks_between_clips']):
+                                        killstreak_count =  killstreak_counter(demo_events[i+1], killstreak_count)
                                         # Sets a new end tick
-                                        endTick = int(demoEvents[i+1][4]) + ticksAfter(demoEvents[i+1])
-                                        endTick += int(mod_effects['modExtend']) if "modExtend" in mod_effects else 0
-                                        mod_effects = checkMods(ryukbot_settings, demoEvents[i+1], mod_effects)
+                                        end_tick = int(demo_events[i+1][4]) + ticks_after(demo_events[i+1])
+                                        end_tick += int(mod_effects['modExtend']) if "modExtend" in mod_effects else 0
+                                        mod_effects = check_mods(ryukbot_settings, demo_events[i+1], mod_effects)
                                         # Incriments i to show that line has been parsed already
                                         i += 1
                                     else:
-                                        checkNext = False
+                                        check_next = False
                                 else:
-                                    checkNext = False
+                                    check_next = False
                             
-                            clipCount += 1
+                            clip_count += 1
                             suffix = ''
-                            if killstreakCount == 0:
+                            if killstreak_count == 0:
                                 suffix = 'BM'
                             else: 
                                 if bookmark:
-                                    suffix = ('BM%s+' % (killstreakCount))
+                                    suffix = ('BM%s+' % (killstreak_count))
                                 else:
-                                    suffix = ('KS%s' % (killstreakCount))
+                                    suffix = ('KS%s' % (killstreak_count))
                                     
-                            startTick -= tapCount * ryukbot_settings['rewind_amount']
+                            start_tick -= tap_count * ryukbot_settings['rewind_amount']
                             
-                            if startTick < ryukbot_settings["start_delay"]:
-                                startTick = ryukbot_settings["start_delay"]
+                            if start_tick < ryukbot_settings["start_delay"]:
+                                start_tick = ryukbot_settings["start_delay"]
                                 
-                            if endTick < ryukbot_settings["start_delay"]:
-                                endTick = ryukbot_settings["start_delay"] + 500
+                            if end_tick < ryukbot_settings["start_delay"]:
+                                end_tick = ryukbot_settings["start_delay"] + 500
                             
-                            demoTicks.append({
-                                "startTick": startTick,
-                                "endTick": endTick,
+                            demo_ticks.append({
+                                "start_tick": start_tick,
+                                "end_tick": end_tick,
                                 "suffix": suffix,
                                 "mod_effects": mod_effects
                             })
                             
-                            displayDemoName = f'{mod_effects["modPrefix"].replace(" ", "-")}_{demoName}' if 'modPrefix' in mod_effects else demoName
+                            display_demo_name = f'{mod_effects["mod_prefix"].replace(" ", "-")}_{demo_name}' if 'mod_prefix' in mod_effects else demo_name
                             
-                            displaySuffix = f'{suffix}_{mod_effects["modSuffix"].replace(" ", "-")}' if 'modSuffix' in mod_effects else suffix
+                            display_suffix = f'{suffix}_{mod_effects["mod_suffix"].replace(" ", "-")}' if 'mod_suffix' in mod_effects else suffix
                                 
-                            dprint(ryukbot_settings, f'Clip {clipCount}: {displayDemoName}_{startTick}-{endTick}_{displaySuffix}', 'cyan', 2)
+                            dprint(ryukbot_settings, f'Clip {clip_count}: {display_demo_name}_{start_tick}-{end_tick}_{display_suffix}', 'cyan', 2)
                             
                             # IGNORE THIS
                             if ((rand := randint(1, 100)) <= 5):
@@ -528,63 +532,63 @@ def ryukbot():
                             # Increment i
                             i += 1
                         
-                        vdmCount = 1
+                        vdm_count = 1
                         clip = 0
                         
-                        dprint(ryukbot_settings, f'Writing file: {demoName}.vdm', 'green', 3)
+                        dprint(ryukbot_settings, f'Writing file: {demo_name}.vdm', 'green', 3)
                         
-                        while clip < len(demoTicks):
+                        while clip < len(demo_ticks):
                             
                             # Sets original tick counts 
-                            clipStart = demoTicks[clip]["startTick"]
-                            clipEnd = demoTicks[clip]["endTick"]
-                            suffix = demoTicks[clip]["suffix"]
-                            demo_mods = demoTicks[clip]["mod_effects"]
+                            clip_start = demo_ticks[clip]["start_tick"]
+                            clip_end = demo_ticks[clip]["end_tick"]
+                            suffix = demo_ticks[clip]["suffix"]
+                            demo_mods = demo_ticks[clip]["mod_effects"]
                             
-                            doubleCheck = True
-                            while doubleCheck:
+                            double_check = True
+                            while double_check:
                                 
                                 # Checks that its less than the length of the list
-                                if i+1 < len(demoTicks):
-                                    # Checks if endTick is before the start of the next clip
-                                    if clipEnd >= ((demoTicks[clip+1]["startTick"]) - ryukbot_settings['minimum_ticks_between_clips']):
+                                if i+1 < len(demo_ticks):
+                                    # Checks if end_tick is before the start of the next clip
+                                    if clip_end >= ((demo_ticks[clip+1]["start_tick"]) - ryukbot_settings['minimum_ticks_between_clips']):
                                         # Sets a new end tick
-                                        clipEnd = int(demoTicks[clip+1]["endTick"])
+                                        clip_end = int(demo_ticks[clip+1]["end_tick"])
                                         
                                         # Combines the suffixes to show it was multiple seperated clips combined
-                                        suffix = suffix + '_' + demoTicks[clip+1]["suffix"]
+                                        suffix = suffix + '_' + demo_ticks[clip+1]["suffix"]
                                         # Incriments i to show that line has been parsed already
                                         clip += 1
                                     else:
-                                        doubleCheck = False
+                                        double_check = False
                                 else:
-                                    doubleCheck = False
+                                    double_check = False
                                     
-                            vdmCount = printVDM(VDM, demoName, clipStart, clipEnd, suffix, lastTick, vdmCount, demo_mods)
-                            lastTick = clipEnd + 100
+                            vdm_count = print_VDM(VDM, demo_name, clip_start, clip_end, suffix, last_tick, vdm_count, demo_mods)
+                            last_tick = clip_end + 100
                             clip += 1
                             
-                        completeVDM(VDM, nextDemo, lastTick, vdmCount, demoName)
+                        complete_VDM(VDM, next_demo, last_tick, vdm_count, demo_name)
                         
-                        dprint(ryukbot_settings, f'Done writing file: {demoName}.vdm', 'green', 0)
-                        dprint(ryukbot_settings, f'Found {clipCount} clip(s)', 'green', 1)
+                        dprint(ryukbot_settings, f'Done writing file: {demo_name}.vdm', 'green', 0)
+                        dprint(ryukbot_settings, f'Found {clip_count} clip(s)', 'green', 1)
                                 
-                        demoIndex += 1
+                        demo_index += 1
                 else: 
-                    demoIndex += 1
-                    dprint(ryukbot_settings, f'{demoName}.vdm already exists', 'yellow', 0)  
+                    demo_index += 1
+                    dprint(ryukbot_settings, f'{demo_name}.vdm already exists', 'yellow', 0)  
                     dprint(ryukbot_settings, f'Disable "safe_mode" in the settings to overwrite anyway', 'yellow', 0)  
                     dprint(ryukbot_settings, f'I didn\'t think anyone would ever actually use that awful setting', 'magenta', 68)
                 
 
-        cprint(f'\nScanning {eventFileName} is complete', 'green')
+        cprint(f'\nScanning {event_file_name} is complete', 'green')
         if ryukbot_settings["clear_events"]:
-            cprint(f'Clearing {eventFileName}', 'yellow')
+            cprint(f'Clearing {event_file_name}', 'yellow')
             try:
                 open(eventFile, 'w+').close()
-                cprint(f'{eventFileName} cleared')
+                cprint(f'{event_file_name} cleared')
             except:
-                eprint(ryukbot_settings, f'Error while clearing {eventFileName}', 398)
+                eprint(ryukbot_settings, f'Error while clearing {event_file_name}', 398)
         input("Press enter to close...")
         os._exit(0)
     except IndexError:
@@ -732,6 +736,6 @@ Patreon: https://www.patreon.com/ryuktf2
 Discord: Ryuk#1825\n\n""", attrs=["bold"])
     
 
-settingRundown()
+setting_rundown()
         
 ryukbot()
