@@ -311,6 +311,26 @@ def tap_counter(event, next_event, tap_count):
             if int(event[4]) + ryukbot_settings['interval_for_rewind_double_taps'] >= int(next_event[4]):
                 tap_count += 1
     return tap_count
+
+def validate_event_file(ryukbot_settings):
+    tf_folder = ryukbot_settings["tf_folder"]
+        
+    if Path(tf_folder + '\\demos\\_events.txt').is_file():
+        tf_folder = tf_folder + '\\demos'
+        event_file_name = '_events.txt'
+    elif Path(tf_folder + '\\demos\\KillStreaks.txt').is_file():
+        tf_folder = tf_folder + '\\demos'
+        event_file_name = 'KillStreaks.txt'
+    elif Path(tf_folder + '\\_events.txt').is_file():
+        event_file_name = '_events.txt'
+    elif Path(tf_folder + '\\KillStreaks.txt').is_file():
+        event_file_name = 'KillStreaks.txt'
+    else:
+        print_error(ryukbot_settings, 'Can not find KillStreaks.txt or _event.txt', 331)
+    
+    event_file = Path(f'{tf_folder}\\{event_file_name}')
+    
+    return tf_folder, event_file_name, event_file
         
 # Read _events.txt or killstreaks.txt file 
 def ryukbot():
@@ -318,24 +338,9 @@ def ryukbot():
         The base of the entire program
     """
     try:
-        tf_folder = ryukbot_settings["tf_folder"]
-        
-        if Path(tf_folder + '\\demos\\_events.txt').is_file():
-            tf_folder = tf_folder + '\\demos'
-            event_file_name = '_events.txt'
-        elif Path(tf_folder + '\\demos\\KillStreaks.txt').is_file():
-            tf_folder = tf_folder + '\\demos'
-            event_file_name = 'KillStreaks.txt'
-        elif Path(tf_folder + '\\_events.txt').is_file():
-            event_file_name = '_events.txt'
-        elif Path(tf_folder + '\\KillStreaks.txt').is_file():
-            event_file_name = 'KillStreaks.txt'
-        else:
-            print_error(ryukbot_settings, 'Can not find KillStreaks.txt or _event.txt', 331)
-        
-        eventFile = Path(f'{tf_folder}\\{event_file_name}')
+        tf_folder, event_file_name, event_file = validate_event_file(ryukbot_settings)
             
-        with open(eventFile, 'r') as _events:
+        with open(event_file, 'r') as _events:
 
             # Saving the file as an array/list variable
             eventLines = _events.readlines()
@@ -363,7 +368,7 @@ def ryukbot():
                 cprint((f"{event_file_name} is empty"), 'red')
                 print(f'Would you like to run the {event_file_name} maker?')
                 if yesNo():
-                    if _event_maker(eventFile, event_file_name, ryukbot_settings['advanced_event_maker']):
+                    if _event_maker(event_file, event_file_name, ryukbot_settings['advanced_event_maker']):
                         os.system('cls')
                         cprint('Run Ryukbot now?\n', 'cyan')
                         if yesNo():
@@ -585,7 +590,7 @@ def ryukbot():
         if ryukbot_settings["clear_events"]:
             cprint(f'Clearing {event_file_name}', 'yellow')
             try:
-                open(eventFile, 'w+').close()
+                open(event_file, 'w+').close()
                 cprint(f'{event_file_name} cleared')
             except:
                 print_error(ryukbot_settings, f'Error while clearing {event_file_name}', 398)
