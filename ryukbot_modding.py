@@ -176,7 +176,7 @@ def check_mods(ryukbot_settings, event, mod_properties):
                     code = rbcParse.search(mod["code"])
                     run_mod(code, event, mod_properties, False, False)
             except: 
-                eprint(ryukbot_settings, 'Mod lacking code or it is incorrectly coded', 431)
+                print_error(ryukbot_settings, 'Mod lacking code or it is incorrectly coded', 431)
             
             
                     

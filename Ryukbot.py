@@ -57,21 +57,21 @@ def check_setting(setting, setting_descriptions):
                         ryukbot_settings[setting] = True if ryukbot_settings[setting] == 1 else False
                         return ryukbot_settings[setting]
                     else:
-                        eprint(ryukbot_settings, f'{setting} is incorrectly set up (should be a 1 or 0)', 204)
+                        print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be a 1 or 0)', 204)
                 else: 
                     return ryukbot_settings[setting]
                     
             else:
-                eprint(ryukbot_settings, f'{setting} is incorrectly set up (should be a number)', 205)
+                print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be a number)', 205)
         else: 
             if isinstance(ryukbot_settings[setting], str):
                 return ryukbot_settings[setting]
             else:
-                eprint(ryukbot_settings, f'{setting} is incorrectly set up (should be wrapped in quotes)', 203)
+                print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be wrapped in quotes)', 203)
     else:
         cprint(f'{setting} is missing from ryukbot_settings.json', 'red')
-        # eprint(ryukbot_settings, f'{setting} is missing from ryukbot_settings.json\nDefault value is: {setting_descriptions["default"]}', 201)
-        return missingSettingText(setting_descriptions, setting)
+        # print_error(ryukbot_settings, f'{setting} is missing from ryukbot_settings.json\nDefault value is: {setting_descriptions["default"]}', 201)
+        return missing_setting_text(setting_descriptions, setting)
         
 def setting_rundown():
     """
@@ -148,7 +148,7 @@ def print_VDM(VDM, demo_name, start_tick, end_tick, suffix, last_tick, vdm_count
         
         vdm_count = new_command(vdm_count, VDM)
     except:
-        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 372)
+        print_error(ryukbot_settings, f'Error printing to {demo_name}.vdm', 372)
     
     # sets the chat_time based on the settings
     if text_chat:
@@ -182,14 +182,14 @@ def print_VDM(VDM, demo_name, start_tick, end_tick, suffix, last_tick, vdm_count
         VDM.write('factory "PlayCommands"\n\t\tname "record_start"\n\t\tstarttick "%s"\n\t\tcommands "%s startmovie %s_%s-%s_%s %s; clear"\n\t}\n'
                 % (start_tick, commands, demo_name, start_tick, end_tick, suffix, ryukbot_settings["method"]))
     except: 
-        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 373)
+        print_error(ryukbot_settings, f'Error printing to {demo_name}.vdm', 373)
     
     try:
         vdm_count = new_command(vdm_count, VDM)
         VDM.write('factory "PlayCommands"\n\t\tname "record_stop"\n\t\tstarttick "%s"\n\t\tcommands "%s; endmovie; host_framerate 0"\n\t}\n'
                 % (end_tick, end_commands))
     except: 
-        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 374)
+        print_error(ryukbot_settings, f'Error printing to {demo_name}.vdm', 374)
     
     return vdm_count + 1
 
@@ -213,7 +213,7 @@ def complete_VDM(VDM, next_demo, last_tick, vdm_count, demo_name):
         VDM.write('factory "PlayCommands"\n\t\tname "VDM end"\n\t\tstarttick "%s"\n\t\tcommands "%s"\n\t}\n}'
                 % (last_tick, commands))
     except:
-        eprint(ryukbot_settings, f'Error printing to {demo_name}.vdm', 379)
+        print_error(ryukbot_settings, f'Error printing to {demo_name}.vdm', 379)
 
 
 # Prints the backups to the folders told to
@@ -236,7 +236,7 @@ def write_backup(backup_location, events_per_demo):
                 # Write the line to the backup
                 backup_file.write('[%s] %s %s ("%s" at %s)\n' % (demoEvent))
     except:
-        eprint(ryukbot_settings, 'Error while writing backup', 343)
+        print_error(ryukbot_settings, 'Error while writing backup', 343)
             
 # Returns the amount of ticks to put before the clip
 def ticks_prior(event):
@@ -292,7 +292,7 @@ def killstreak_counter(event, current_count):
         else:
             return current_count
     except:
-        eprint(ryukbot_settings, 'Error counting killstreak amount', 405)
+        print_error(ryukbot_settings, 'Error counting killstreak amount', 405)
     
 # Counts the amount of time bookmark is tapped
 def tap_counter(event, next_event, tap_count):
@@ -331,7 +331,7 @@ def ryukbot():
         elif Path(tf_folder + '\\KillStreaks.txt').is_file():
             event_file_name = 'KillStreaks.txt'
         else:
-            eprint(ryukbot_settings, 'Can not find KillStreaks.txt or _event.txt', 331)
+            print_error(ryukbot_settings, 'Can not find KillStreaks.txt or _event.txt', 331)
         
         eventFile = Path(f'{tf_folder}\\{event_file_name}')
             
@@ -345,20 +345,20 @@ def ryukbot():
             carrotRegex = re.compile('\n(\>)?\n')
             
             # Combines it into one string and searches it
-            eventMarks = lineRegex.findall(''.join(eventLines))
-            carrotCount = len(carrotRegex.findall("".join(eventLines))) + 1
+            event_marks = lineRegex.findall(''.join(eventLines))
+            carrot_count = len(carrotRegex.findall("".join(eventLines))) + 1
             
             #* The syntax for getting the variables and its information
-            # LINE: eventMarks[*]           --- EXAMPLE ('2020/04/27 20:23', 'Killstreak', '3', '2020-04-27_20-16-21', '29017')
-            # DATE: eventMarks[*][0]        --- EXAMPLE 2020/04/27 20:23
-            # TYPE: eventMarks[*][1]        --- EXAMPLE Killstreak 
-            # CRITERIA: eventMarks[*][2]    --- EXAMPLE 3
-            # DEMO: eventMarks[*][3]        --- EXAMPLE 2020-04-27_20-16-21
-            # TICK: eventMarks[*][4]        --- EXAMPLE 29017
+            # LINE: event_marks[*]           --- EXAMPLE ('2020/04/27 20:23', 'Killstreak', '3', '2020-04-27_20-16-21', '29017')
+            # DATE: event_marks[*][0]        --- EXAMPLE 2020/04/27 20:23
+            # TYPE: event_marks[*][1]        --- EXAMPLE Killstreak 
+            # CRITERIA: event_marks[*][2]    --- EXAMPLE 3
+            # DEMO: event_marks[*][3]        --- EXAMPLE 2020-04-27_20-16-21
+            # TICK: event_marks[*][4]        --- EXAMPLE 29017
             
             # This is used later to check if the demo has changed to the next on the list
             try:
-                demo_name = eventMarks[0][3]
+                demo_name = event_marks[0][3]
             except IndexError:
                 cprint((f"{event_file_name} is empty"), 'red')
                 print(f'Would you like to run the {event_file_name} maker?')
@@ -377,13 +377,13 @@ def ryukbot():
             
             # Simple message letting the user know the programs progress.
             # More updates to the user are nice but I want to try and limit spam to the user.
-            cprint(f'Scanned {len(eventLines)} different events over the span of {carrotCount} demos.', 'green')
-            dprint(ryukbot_settings, f'Wow! You don\'t get many kills do you?', 'magenta', 68)
+            cprint(f'Scanned {len(eventLines)} different events over the span of {carrot_count} demos.', 'green')
+            print_detail(ryukbot_settings, f'Wow! You don\'t get many kills do you?', 'magenta', 68)
         
             all_events = []
             events_per_demo = []
-            # Loops through the list of events in the eventMarks list
-            for event in eventMarks:
+            # Loops through the list of events in the event_marks list
+            for event in event_marks:
                 # Checks if part of the same demo
                 if demo_name != event[3]:
                     # Appends to the all_events list for later use
@@ -424,7 +424,7 @@ def ryukbot():
                 else:
                     next_demo = 'end'
                 
-                dprint(ryukbot_settings, f'\nScanning demo: {demo_name}', 'green', 2)
+                print_detail(ryukbot_settings, f'\nScanning demo: {demo_name}', 'green', 2)
                 
                 # The location of the file we want to make
                 backup_demo_location = Path((str(dir_path) + '\\demos\\' + demo_name + '.txt'))
@@ -512,21 +512,21 @@ def ryukbot():
                             
                             display_suffix = f'{suffix}_{mod_effects["mod_suffix"].replace(" ", "-")}' if 'mod_suffix' in mod_effects else suffix
                                 
-                            dprint(ryukbot_settings, f'Clip {clip_count}: {display_demo_name}_{start_tick}-{end_tick}_{display_suffix}', 'cyan', 2)
+                            print_detail(ryukbot_settings, f'Clip {clip_count}: {display_demo_name}_{start_tick}-{end_tick}_{display_suffix}', 'cyan', 2)
                             
                             # IGNORE THIS
                             if ((rand := randint(1, 100)) <= 5):
-                                dprint(ryukbot_settings, f'Oh god this one is BAD', 'magenta', 68)
+                                print_detail(ryukbot_settings, f'Oh god this one is BAD', 'magenta', 68)
                             elif (5 < rand <= 10):
-                                dprint(ryukbot_settings, f'Don\'t even record this one', 'magenta', 68)
+                                print_detail(ryukbot_settings, f'Don\'t even record this one', 'magenta', 68)
                             elif (10 < rand <= 15):
-                                dprint(ryukbot_settings, f'I don\'t know why this was even marked', 'magenta', 68)
+                                print_detail(ryukbot_settings, f'I don\'t know why this was even marked', 'magenta', 68)
                             elif (15 < rand <= 20):
-                                dprint(ryukbot_settings, f'I have learned what pain feels like from that clip', 'magenta', 68)
+                                print_detail(ryukbot_settings, f'I have learned what pain feels like from that clip', 'magenta', 68)
                             elif (20 < rand <= 25):
-                                dprint(ryukbot_settings, f'This is why robots will eventually take over', 'magenta', 68)
+                                print_detail(ryukbot_settings, f'This is why robots will eventually take over', 'magenta', 68)
                             elif (25 < rand <= 30):
-                                dprint(ryukbot_settings, f'Imagine spending all this time playing to only get a clip like that', 'magenta', 68)
+                                print_detail(ryukbot_settings, f'Imagine spending all this time playing to only get a clip like that', 'magenta', 68)
                                 
                                 
                             # Increment i
@@ -535,7 +535,7 @@ def ryukbot():
                         vdm_count = 1
                         clip = 0
                         
-                        dprint(ryukbot_settings, f'Writing file: {demo_name}.vdm', 'green', 3)
+                        print_detail(ryukbot_settings, f'Writing file: {demo_name}.vdm', 'green', 3)
                         
                         while clip < len(demo_ticks):
                             
@@ -570,15 +570,15 @@ def ryukbot():
                             
                         complete_VDM(VDM, next_demo, last_tick, vdm_count, demo_name)
                         
-                        dprint(ryukbot_settings, f'Done writing file: {demo_name}.vdm', 'green', 0)
-                        dprint(ryukbot_settings, f'Found {clip_count} clip(s)', 'green', 1)
+                        print_detail(ryukbot_settings, f'Done writing file: {demo_name}.vdm', 'green', 0)
+                        print_detail(ryukbot_settings, f'Found {clip_count} clip(s)', 'green', 1)
                                 
                         demo_index += 1
                 else: 
                     demo_index += 1
-                    dprint(ryukbot_settings, f'{demo_name}.vdm already exists', 'yellow', 0)  
-                    dprint(ryukbot_settings, f'Disable "safe_mode" in the settings to overwrite anyway', 'yellow', 0)  
-                    dprint(ryukbot_settings, f'I didn\'t think anyone would ever actually use that awful setting', 'magenta', 68)
+                    print_detail(ryukbot_settings, f'{demo_name}.vdm already exists', 'yellow', 0)  
+                    print_detail(ryukbot_settings, f'Disable "safe_mode" in the settings to overwrite anyway', 'yellow', 0)  
+                    print_detail(ryukbot_settings, f'I didn\'t think anyone would ever actually use that awful setting', 'magenta', 68)
                 
 
         cprint(f'\nScanning {event_file_name} is complete', 'green')
@@ -588,21 +588,21 @@ def ryukbot():
                 open(eventFile, 'w+').close()
                 cprint(f'{event_file_name} cleared')
             except:
-                eprint(ryukbot_settings, f'Error while clearing {event_file_name}', 398)
+                print_error(ryukbot_settings, f'Error while clearing {event_file_name}', 398)
         input("Press enter to close...")
         os._exit(0)
     except IndexError:
-        eprint(ryukbot_settings, 'An Unexpected error occurred while running Ryukbot', 101)
+        print_error(ryukbot_settings, 'An Unexpected error occurred while running Ryukbot', 101)
                 
 if Path('ryukbot_settings.json').is_file():
     # Ensure that ryukbot_settings.json is set correctly
     try:
         ryukbot_settings = json.load(open('ryukbot_settings.json'))
     except:
-        eprint({"console_detail": 4}, 'Error loading ryukbot_settings.json\nYou might\'ve failed the install process.\nPlease delete ryukbot_settings.json and restart ryukbot', 195)
+        print_error({"console_detail": 4}, 'Error loading ryukbot_settings.json\nYou might\'ve failed the install process.\nPlease delete ryukbot_settings.json and restart ryukbot', 195)
 
     ## Ignore this
-    dprint(ryukbot_settings, f'FUNNY HAHA ENABLED', 'magenta', 68)
+    print_detail(ryukbot_settings, f'FUNNY HAHA ENABLED', 'magenta', 68)
     
     ## and all of this
     if (today := dt.today().strftime("%m/%d")) == '12/25':
@@ -726,7 +726,7 @@ Patreon: https://www.patreon.com/ryuktf2
 Discord: Ryuk#1825\n\n""", attrs=["bold"])
 else: 
     with open(Path('ryukbot_settings.json'), 'w') as ryukbot_settings:
-        json.dump(ryukbotInstaller(setting_descriptions), ryukbot_settings, indent=4)
+        json.dump(ryukbot_installer(setting_descriptions), ryukbot_settings, indent=4)
     ryukbot_settings = json.load(open('ryukbot_settings.json'))
     cprint("ATTENTION LEGITIMATE GAMERS", attrs=["bold", "underline"])
     cprint(f"""RYUKBOT {ryukbot_version} HAS BEEN LOADED\n

@@ -65,6 +65,9 @@ class Mod:
         rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | excludes | -i | -d )?(\'(.*)\')?", re.IGNORECASE)
         effect_code = rbcParse.search(line)
         self.effects.append(Effect(effect_code))
+        
+    def run(self):
+        pass
     
     
 class Effect:
