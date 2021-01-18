@@ -49,29 +49,32 @@ def check_setting(setting, setting_descriptions):
         Boolean: returns the value of the setting
     """
     
-    if setting in ryukbot_settings:
-        if (type := setting_descriptions['type']) == 'integer' or type == 'boolean':
-            if str(ryukbot_settings[setting]).isdigit():
-                if type == 'boolean':
-                    if ryukbot_settings[setting] == 1 or ryukbot_settings[setting] == 0:
-                        ryukbot_settings[setting] = True if ryukbot_settings[setting] == 1 else False
-                        return ryukbot_settings[setting]
-                    else:
-                        print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be a 1 or 0)', 204)
-                else: 
-                    return ryukbot_settings[setting]
-                    
-            else:
-                print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be a number)', 205)
-        else: 
-            if isinstance(ryukbot_settings[setting], str):
-                return ryukbot_settings[setting]
-            else:
-                print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be wrapped in quotes)', 203)
-    else:
+    if setting not in ryukbot_settings:
         cprint(f'{setting} is missing from ryukbot_settings.json', 'red')
         # print_error(ryukbot_settings, f'{setting} is missing from ryukbot_settings.json\nDefault value is: {setting_descriptions["default"]}', 201)
         return missing_setting_text(setting_descriptions, setting)
+    
+    if (type := setting_descriptions['type']) == 'integer' or type == 'boolean':
+        
+        if not str(ryukbot_settings[setting]).isdigit():
+            print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be a number)', 205)
+            
+        if type == 'integer':
+            return ryukbot_settings[setting]
+        
+        
+        if ryukbot_settings[setting] == 1 or ryukbot_settings[setting] == 0:
+            ryukbot_settings[setting] = True if ryukbot_settings[setting] == 1 else False
+            return ryukbot_settings[setting]
+        else:
+            print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be a 1 or 0)', 204)
+            
+    else: 
+        if isinstance(ryukbot_settings[setting], str):
+            return ryukbot_settings[setting]
+        else:
+            print_error(ryukbot_settings, f'{setting} is incorrectly set up (should be wrapped in quotes)', 203)
+        
         
 def setting_rundown():
     """
@@ -230,11 +233,12 @@ def write_backup(backup_location, events_per_demo):
         else: 
             write_method = 'w'
             
-        with open(backup_location, write_method) as backup_file:
-            backup_file.write('>\n')
-            for demoEvent in events_per_demo:
-                # Write the line to the backup
-                backup_file.write('[%s] %s %s ("%s" at %s)\n' % (demoEvent))
+        backup_file = open(backup_location, write_method)
+        
+        backup_file.write('>\n')
+        for demo_event in events_per_demo:
+            # Write the line to the backup
+            backup_file.write('[%s] %s %s ("%s" at %s)\n' % (demo_event))
     except:
         print_error(ryukbot_settings, 'Error while writing backup', 343)
             
@@ -331,6 +335,22 @@ def validate_event_file(ryukbot_settings):
     event_file = Path(f'{tf_folder}\\{event_file_name}')
     
     return tf_folder, event_file_name, event_file
+
+def empty_events(ryukbot_settings, event_file_name, event_file):
+    cprint((f"{event_file_name} is empty"), 'red')
+    print(f'Would you like to run the {event_file_name} maker?')
+    if yesNo():
+        if _event_maker(event_file, event_file_name, ryukbot_settings['advanced_event_maker']):
+            os.system('cls')
+            cprint('Run Ryukbot now?\n', 'cyan')
+            if yesNo():
+                ryukbot()
+            else:
+                input("Press enter to close...")
+                os._exit(0)
+    else:
+        input("Press enter to close...")
+        os._exit(0)
         
 # Read _events.txt or killstreaks.txt file 
 def ryukbot():
@@ -343,15 +363,17 @@ def ryukbot():
         with open(event_file, 'r') as _events:
 
             # Saving the file as an array/list variable
-            eventLines = _events.readlines()
+            event_lines = _events.readlines()
             
             # REGEX for future use
-            lineRegex = re.compile('\[(.*)\] (kill|killstreak|bookmark|player) (.*) \("(.*)" at (\d*)\)', re.IGNORECASE)
-            carrotRegex = re.compile('\n(\>)?\n')
+            line_regex = re.compile('\[(.*)\] (kill|killstreak|bookmark|player) (.*) \("(.*)" at (\d*)\)', re.IGNORECASE)
+            regex = re.compile('\[(.*)\] (.*) \("(.*)" at (\d*)\)', re.IGNORECASE)
+            carrot_regex = re.compile('\n(\>)?\n')
             
             # Combines it into one string and searches it
-            event_marks = lineRegex.findall(''.join(eventLines))
-            carrot_count = len(carrotRegex.findall("".join(eventLines))) + 1
+            event_marks = line_regex.findall(''.join(event_lines))
+            event_list = regex.findall(''.join(event_lines))
+            carrot_count = len(carrot_regex.findall("".join(event_lines))) + 1
             
             #* The syntax for getting the variables and its information
             # LINE: event_marks[*]           --- EXAMPLE ('2020/04/27 20:23', 'Killstreak', '3', '2020-04-27_20-16-21', '29017')
@@ -365,28 +387,20 @@ def ryukbot():
             try:
                 demo_name = event_marks[0][3]
             except IndexError:
-                cprint((f"{event_file_name} is empty"), 'red')
-                print(f'Would you like to run the {event_file_name} maker?')
-                if yesNo():
-                    if _event_maker(event_file, event_file_name, ryukbot_settings['advanced_event_maker']):
-                        os.system('cls')
-                        cprint('Run Ryukbot now?\n', 'cyan')
-                        if yesNo():
-                            ryukbot()
-                        else:
-                            input("Press enter to close...")
-                            os._exit(0)
-                else:
-                    input("Press enter to close...")
-                    os._exit(0)
+                empty_events(ryukbot_settings, event_file_name, event_file)
             
             # Simple message letting the user know the programs progress.
             # More updates to the user are nice but I want to try and limit spam to the user.
-            cprint(f'Scanned {len(eventLines)} different events over the span of {carrot_count} demos.', 'green')
+            cprint(f'Scanned {len(event_lines)} different events over the span of {carrot_count} demos.', 'green')
             print_detail(ryukbot_settings, f'Wow! You don\'t get many kills do you?', 'magenta', 68)
         
             all_events = []
             events_per_demo = []
+            events = []
+            
+            for event in event_list:
+                events.append(Event(event))
+            
             # Loops through the list of events in the event_marks list
             for event in event_marks:
                 # Checks if part of the same demo
@@ -446,7 +460,13 @@ def ryukbot():
                 
                 demo_ticks = []
                 
-                if not (vdm_path.exists() and (ryukbot_settings["safe_mode"])):
+                if (vdm_path.exists() and (ryukbot_settings["safe_mode"])):
+                    demo_index += 1
+                    print_detail(ryukbot_settings, f'{demo_name}.vdm already exists', 'yellow', 0)  
+                    print_detail(ryukbot_settings, f'Disable "safe_mode" in the settings to overwrite anyway', 'yellow', 0)  
+                    print_detail(ryukbot_settings, f'I didn\'t think anyone would ever actually use that awful setting', 'magenta', 68)
+                    
+                else:
                     with open(vdm_path, 'w+') as VDM:
                         last_tick = ryukbot_settings['start_delay']
                         
@@ -554,20 +574,19 @@ def ryukbot():
                             while double_check:
                                 
                                 # Checks that its less than the length of the list
-                                if i+1 < len(demo_ticks):
-                                    # Checks if end_tick is before the start of the next clip
-                                    if clip_end >= ((demo_ticks[clip+1]["start_tick"]) - ryukbot_settings['minimum_ticks_between_clips']):
-                                        # Sets a new end tick
-                                        clip_end = int(demo_ticks[clip+1]["end_tick"])
-                                        
-                                        # Combines the suffixes to show it was multiple seperated clips combined
-                                        suffix = suffix + '_' + demo_ticks[clip+1]["suffix"]
-                                        # Incriments i to show that line has been parsed already
-                                        clip += 1
-                                    else:
-                                        double_check = False
-                                else:
+                                if i+1 >= len(demo_ticks):
                                     double_check = False
+                                elif clip_end < ((demo_ticks[clip+1]["start_tick"]) - ryukbot_settings['minimum_ticks_between_clips']):
+                                    double_check = False
+                                else:
+                                    # Sets a new end tick
+                                    clip_end = int(demo_ticks[clip+1]["end_tick"])
+                                    
+                                    # Combines the suffixes to show it was multiple seperated clips combined
+                                    suffix = suffix + '_' + demo_ticks[clip+1]["suffix"]
+                                    # Incriments i to show that line has been parsed already
+                                    clip += 1
+                                    
                                     
                             vdm_count = print_VDM(VDM, demo_name, clip_start, clip_end, suffix, last_tick, vdm_count, demo_mods)
                             last_tick = clip_end + 100
@@ -579,11 +598,7 @@ def ryukbot():
                         print_detail(ryukbot_settings, f'Found {clip_count} clip(s)', 'green', 1)
                                 
                         demo_index += 1
-                else: 
-                    demo_index += 1
-                    print_detail(ryukbot_settings, f'{demo_name}.vdm already exists', 'yellow', 0)  
-                    print_detail(ryukbot_settings, f'Disable "safe_mode" in the settings to overwrite anyway', 'yellow', 0)  
-                    print_detail(ryukbot_settings, f'I didn\'t think anyone would ever actually use that awful setting', 'magenta', 68)
+                    
                 
 
         cprint(f'\nScanning {event_file_name} is complete', 'green')

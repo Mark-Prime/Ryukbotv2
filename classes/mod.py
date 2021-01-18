@@ -120,10 +120,10 @@ class Effect:
     
     
     
-mod_source = {
-            "title": "Exec configBackup.cfg",
-            "description": "execs configBackup.cfg when the clip ends",
-            "code": "suffix '[v]' on 'bm' > -o '[v]' on 'bm' excludes 'General&spec'"
-        }
+# mod_source = {
+#             "title": "Exec configBackup.cfg",
+#             "description": "execs configBackup.cfg when the clip ends",
+#             "code": "suffix '[v]' on 'bm' > -o '[v]' on 'bm' excludes 'General&spec'"
+#         }
 
-mod = Mod(mod_source)
+# mod = Mod(mod_source)
