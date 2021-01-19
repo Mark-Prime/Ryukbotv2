@@ -162,7 +162,7 @@ def run_mod(code, event, mod_properties, type, valid):
                     mod_properties[mod_options[command]] = code.group(2)
 
 def check_mods(ryukbot_settings, event, mod_properties):
-    rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | discludes | -i | -d )?(\'(.*)\')?", re.IGNORECASE)
+    rbcParse = re.compile(r"(.*) \'(.*)\' on \'(killstreak|bookmark|ks|bm|\*)\'( value | unless | -v | -u | includes | excludes | -i | -e )?(\'(.*)\')?", re.IGNORECASE)
     if "mods" in ryukbot_settings:
         for mod in ryukbot_settings["mods"]:
             try: 

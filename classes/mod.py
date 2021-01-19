@@ -58,7 +58,7 @@ class Mod:
             lines = self.code.split(" > ")
             
         for line in lines:
-            print(line)
+            # print(line)
             self.generate_effect(line)
         
     def generate_effect(self, line):
@@ -78,6 +78,13 @@ class Effect:
         self.type = self.validate_type(line[3])
         self.comparitor = self.validate_comparitor(line[4])
         self.compared_value = self.validate_compared_value(line[5])
+
+    def __str__(self):
+        return f"""Command: {self.command}
+Value: {self.value}
+Type: {self.type}
+Comparitor: {self.comparitor}
+Compared Value: {self.split_type.join(self.compared_value)}"""
         
     def validate_command(self, command):
         if command in modOptions:
@@ -112,18 +119,88 @@ class Effect:
         return comparitor.replace(' ', '')
     
     def validate_compared_value(self, compared_value):
+        self.split_type = '|'
         if not compared_value:
-            return "*"
-        
-        return compared_value.replace('\'', '')
-        
-    
-    
-    
-# mod_source = {
-#             "title": "Exec configBackup.cfg",
-#             "description": "execs configBackup.cfg when the clip ends",
-#             "code": "suffix '[v]' on 'bm' > -o '[v]' on 'bm' excludes 'General&spec'"
-#         }
+            return ["*"]
 
-# mod = Mod(mod_source)
+        compared_value.replace('\'', '')
+
+        if "&" in compared_value:
+            self.split_type = '&'
+            compared_value = compared_value.split('&')
+        elif "|" in compared_value:
+            compared_value = compared_value.split('|')
+        else:
+            compared_value = [compared_value]
+        
+        return compared_value
+
+    def is_type_match(self, event):
+        return self.type.lower() == event.type.lower() or self.type == '*'
+
+    def does_effect_apply(self, event):
+        if not self.is_type_match(event):
+            return False
+
+
+        if self.comparitor == '*':
+            return True
+
+        elif self.comparitor == 'value':
+            return self.is_value(event)
+
+        elif self.comparitor == 'unless':
+            return not self.is_value(event)
+
+        elif self.comparitor == 'includes':
+            return self.is_included(event)
+
+        elif self.comparitor == 'excludes':
+            return self.is_excluded(event)
+        
+        return False
+
+    def is_value(self, event):
+        if self.split_type == "|":
+            for value in self.compared_value:
+                value = value.replace('\'', '')
+                if event.value == value or value == '*':
+                    return True
+            return False
+
+        elif self.split_type == "&":
+            for value in self.compared_value:
+                value = value.replace('\'', '')
+                if event.value != value or value == '*':
+                    return False
+            return True
+        
+    def is_included(self, event):
+        if self.split_type == "|":
+            for value in self.compared_value:
+                value = value.replace('\'', '')
+                if value in event.value or value == '*':
+                    return True
+            return False
+
+        elif self.split_type == "&":
+            for value in self.compared_value:
+                value = value.replace('\'', '')
+                if value not in event.value or value == '*':
+                    return False
+            return True 
+
+    def is_excluded(self, event):
+        if self.split_type == "|":
+            for value in self.compared_value:
+                value = value.replace('\'', '')
+                if value not in event.value or value == '*':
+                    return True
+            return False
+
+        elif self.split_type == "&":
+            for value in self.compared_value:
+                value = value.replace('\'', '')
+                if value in event.value or value == '*':
+                    return False
+            return True

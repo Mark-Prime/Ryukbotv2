@@ -5,6 +5,7 @@ _events.txt
 
 /output
 /__pycache__
+/classes/__pycache__
 
 debug.log
 
