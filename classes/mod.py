@@ -142,7 +142,6 @@ Compared Value: {self.split_type.join(self.compared_value)}"""
         if not self.is_type_match(event):
             return False
 
-
         if self.comparitor == '*':
             return True
 

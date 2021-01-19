@@ -10,7 +10,7 @@ import colorama
 from random import randint
 from termcolor import cprint
 from ryukbot_installer import *
-import ryukbot_settings
+from ryukbot_settings import descriptions
 from ryukbot_maker import _event_maker
 from yesNo import yesNo
 from sprint import *
@@ -34,7 +34,7 @@ ryukbot_version = 'v2.1.0'
 # cyan:     Titles/System messages
 # white:    Normal paragraph messages/descriptions of things
 
-setting_descriptions = ryukbot_settings.descriptions()
+setting_descriptions = descriptions()
 mod_options = get_mod_options()
     
 

@@ -78,26 +78,3 @@ class Event:
                     value = self.type
 
                 self.effects[effect.command] = value
-
-
-
-# event_lines = """>
-# [2020/07/11/ 18:43] Player bookmark ("20200711_1835_pl_swiftwater_final1_BOPIS_BLU" at 28438)
-# >
-# [2020/07/13/ 17:50] Kill Streak:4 ("20200713_1745_pl_swiftwater_final1_RED_BOPIS" at 18581)
-# >
-# [2020-01-08_14-23-31] Bookmark General ("20190925_2153_koth_clearcut_b13_lem0n_blu" at 47500)
-# >
-# [2020/07/11/ 18:43] penis ("20200711_1835_pl_swiftwater_final1_BOPIS_BLU" at 28438)
-# >
-# [2020/07/11/ 18:43] spec ("20200711_1835_pl_swiftwater_final1_BOPIS_BLU" at 28438)"""
-
-# line_regex = re.compile('\[(.*)\] (.*) \("(.*)" at (\d*)\)', re.IGNORECASE)
-
-# # Combines it into one string and searches it
-# event_marks = line_regex.findall(event_lines)
-
-# for event in event_marks:
-#     new_event = Event(event) 
-#     mod = testmod()
-#     new_event.apply_mod(mod)
