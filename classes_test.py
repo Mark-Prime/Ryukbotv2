@@ -39,7 +39,11 @@ for event in event_marks:
     if not vdm:
         vdm = VDM(ryukbot_settings, clip)
     elif vdm.demo_name != new_event.demo_name:
-        vdm.close(clip.demo_name)
+        
+        if ryukbot_settings['record_continuous'] == 1:
+            vdm.close(clip.demo_name)
+        else: 
+            vdm.close()
 
         vdm = VDM(ryukbot_settings, clip)
     elif vdm.latest.can_include(ryukbot_settings['minimum_ticks_between_clips'], clip):
