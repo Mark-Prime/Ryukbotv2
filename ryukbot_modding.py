@@ -73,7 +73,7 @@ mod_options = {
 
 # bookmark      bm          
 # killstreak    ks
-# *                         All clips no matter what it is
+# *             All clips no matter what it is
 
 
 def get_mod_options():

@@ -1,5 +1,39 @@
 import re
 
+#! MOD COMMANDS DOCUMENTATION
+# Command       Shortcut    Description
+
+# commands      run         Runs tf2 console commands when the clip starts
+# crosshair     -ch         Enable or disable crosshair
+# endcommands   -ec         Runs tf2 console commands when the clip ends (same as runafter)
+# extend        -e          Adds extra time to the end of the recording
+# framerate     fps         Changes the fps of the clip
+# hud                       Enable or disable hud
+# prefix        -p          Add text to the beginning of a clip
+# output        -o          The folder to output this clip to
+# runafter      -ra         Runs tf2 console commands when the clip ends (same as endcommands)
+# specfirst     -s1         Spectate a specific player in an stv demo in firstperson (same as spectate)
+# spectate      -sp         Spectate a specific player in an stv demo (same as specfirst)
+# specthird     -s3         Spectate a specific player in an stv demo in thirdperson
+# suffix        -s          Add text to the end of a clip
+# textchat      -tc         Enable or disable text chat
+# voicechat     -vc         Enable or disable voice chat
+
+#! MOD VALUE DOCUMENTION
+# Value         Shortcut    Descrption
+
+# [value]       [v]         Whatever the value of the bookmark or killstreak is
+# [lastvalue]   [lv]        Whatever the last value/word of the bookmark or killstreak is 
+# [firstvalue]  [fv]        Whatever the first value/word of the bookmark or killstreak is
+# [type]        [t]         If its a killstreak or bookmark
+
+#! MOD ACTIVATOR DOCUMENTATION
+# Activator     Shortcut    Descrption
+
+# bookmark      bm          
+# killstreak    ks
+# *             All clips no matter what it is
+
 modOptions = {
     "prefix": "prefix",
     "-p": "prefix",
@@ -12,25 +46,26 @@ modOptions = {
     "fps": "framerate",
     "crosshair": "crosshair",
     "-ch": "crosshair",
-    "hud": "hud",
+    "hud": "HUD",
     "text_chat": "text_chat",
     "textchat": "text_chat",
     "-tc": "text_chat",
     "voice_chat": "voice_chat",
     "voicechat": "voice_chat",
     "-vc": "voice_chat",
-    "output": "output",
-    "-o": "output",
+    "output_folder": "output_folder",
+    "output": "output_folder",
+    "-o": "output_folder",
     "spectate": "spec_first",
     "-sp": "spec_first",
     "spec_first": "spec_first",
     "specfirst": "spec_first",
     "-s1": "spec_first",
-    "specthird": "specthird",
-    "-s3": "specthird",
-    "run_after": "run_after",
-    "runafter": "run_after",
-    "-ra": "run_after",
+    "specthird": "spec_third",
+    "-s3": "spec_third",
+    "run_after": "end_commands",
+    "runafter": "end_commands",
+    "-ra": "end_commands",
     "end_commands": "end_commands", 
     "endcommands": "end_commands",
     "-ec": "end_commands",
@@ -58,7 +93,6 @@ class Mod:
             lines = self.code.split(" > ")
             
         for line in lines:
-            # print(line)
             self.generate_effect(line)
         
     def generate_effect(self, line):
@@ -98,6 +132,12 @@ Compared Value: {self.split_type.join(self.compared_value)}"""
         
         if value.lower() == '[t]':
             return '[type]'
+
+        if value.lower() == '[lv]':
+            return '[lastvalue]'
+        
+        if value.lower() == '[fv]':
+            return '[firstvalue]'
         
         return value
     

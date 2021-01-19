@@ -39,8 +39,13 @@ class Event:
             self.value = self.event[1]
         else:
             event_split = self.event[1].split(' ')
-            self.type = event_split[0]
-            event_split.pop(0)
+
+            if event_split[0].lower() == 'kill' or event_split[0].lower() == 'killstreak' or event_split[0].lower() == 'bookmark':
+                self.type = event_split[0]
+                event_split.pop(0)
+            else: 
+                self.type = 'Bookmark'
+
             self.value = " ".join(event_split)
         
             self.convert_prec()
@@ -71,10 +76,15 @@ class Event:
         for effect in mod.effects:
             if effect.does_effect_apply(self):
                 value = effect.value
+                split_value = self.value.split(' ')
 
                 if effect.value == '[value]':
                     value = self.value
                 elif effect.type == '[type]':
                     value = self.type
+                elif effect.value == '[firstvalue]':
+                    value = split_value[0]
+                elif effect.type == '[lastvalue]':
+                    value = split_value[len(split_value) - 1]
 
                 self.effects[effect.command] = value
