@@ -7,6 +7,7 @@ class Clip:
         self._has_bookmark = False
         self._ks_value = 0
         self._effects = event.effects
+        self.display_name = ''
         
         if event.is_killstreak():
             self.init_killstreak(settings, event)
@@ -104,10 +105,10 @@ class Clip:
     def type(self):
         clip_type = ''
         if self.has_bookmark:
-            clip_type = 'BM'
+            clip_type = 'Bm'
             if self._ks_value > 0:
                 clip_type += str(self._ks_value) + '+'
         else: 
-            clip_type = 'KS' + str(self._ks_value)
+            clip_type = 'Ks' + str(self._ks_value)
 
         return clip_type

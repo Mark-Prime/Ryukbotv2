@@ -1,6 +1,9 @@
 from pathlib import Path
+from datetime import datetime as dt
 
 class VDM:
+    date_time = str(dt.now().date()) + '_' + str(dt.now().time()) + '.txt'
+
     
     def __init__(self, settings, clip):
         self._clips = [clip]
@@ -20,9 +23,19 @@ class VDM:
 
     def open(self):
         self._path = Path(f'{self._settings["tf_folder"]}/{self._demo_name}.vdm')
-        self._output = open(self._path, 'w+')
+        self._is_printable = True
 
-        self._output.write('demoactions\n{\n')
+        if self._path.is_file() and self._settings['safe_mode'] == 1:
+            self._is_printable = False
+
+        if self._is_printable:
+            self._output = open(self._path, 'w+')
+
+            self.write('demoactions\n{\n')
+
+    def write(self, message):
+        if self._is_printable:
+            self._output.write(message)
 
     def print_latest_clip(self):
         self.skip_to_clip()
@@ -32,7 +45,7 @@ class VDM:
     def start_clip(self):
         self.start_command()
         commands = self.validate_commands()
-        self._output.write("""factory "PlayCommands"
+        self.write("""factory "PlayCommands"
 		name "record_start"
 		starttick "%s"
 		commands "%s"
@@ -83,7 +96,9 @@ class VDM:
 
         clip_type = self.latest.type
 
-        return f"{commands}{effects['commands']} startmovie {effects['output_folder']}{effects['prefix'].replace(' ', '_')}{self._demo_name}_{self.latest.start}-{self.latest.end}_{clip_type}{effects['suffix'].replace(' ', '_')} h264; clear"
+        self.latest_display_name = f"{effects['output_folder']}{effects['prefix'].replace(' ', '_')}{self._demo_name}_{self.latest.start}-{self.latest.end}_{clip_type}{effects['suffix'].replace(' ', '_')}"
+        self.latest.display_name = self.latest_display_name
+        return f"{commands}{effects['commands']} startmovie {self.latest.display_name} h264; clear"
 
     def check_effect(self, effect, default=None):
         if effect not in self.latest.effects:
@@ -110,7 +125,7 @@ class VDM:
         elif 'spec_third' in self.latest.effects:
             end_commands = f'spec_mode; {end_commands}'
 
-        self._output.write("""factory "PlayCommands"
+        self.write("""factory "PlayCommands"
 		name "record_stop"
 		starttick "%s"
 		commands "%s"
@@ -120,26 +135,50 @@ class VDM:
         if ((self.latest.start - 100) - (self._last_clip_end + 100)) > self._settings['minimum_ticks_between_clips']:
             self.start_command()
 
-            self._output.write(f"""factory "SkipAhead"
+            self.write(f"""factory "SkipAhead"
 		name "skip"
 		starttick "{self._last_clip_end + 100}"
 		skiptotick "{self.latest.start - 100}"
     """ + '}\n')
 
     def start_command(self):
-        self._output.write('\t"%s"\n\t{\n\t\t' % (self._command_count))
+        self.write('\t"%s"\n\t{\n\t\t' % (self._command_count))
         self._command_count += 1
 
     def close(self, next_demo=None):
+        self.backup()
         self.print_latest_clip()
         self.start_command()
-        self._output.write("""factory "PlayCommands"
+        self.write("""factory "PlayCommands"
 		name "VDM end"
 		starttick "%s"
 		commands "%s"
 	}\n""" % (self._last_clip_end + 100, f'playdemo {next_demo}' if next_demo != None else 'quit'))
-        self._output.write('}')
-        self._output.close()
+        self.write('}')
+        if self._is_printable:
+            self._output.close()
+
+    def backup(self):
+        # The location of the file we want to make
+        backup_demo_location = Path((str(self._settings['backup_path']) + '\\demos\\' + self.demo_name + '.txt'))
+        backup_location = Path((str(self._settings['backup_path']) + '\\' + (VDM.date_time.replace(':', '-')).split('.')[0] + '.txt'))
+
+        self.print_backup(backup_demo_location, always_overwrite=True)
+        self.print_backup(backup_location)
+
+    def print_backup(self, backup_location, always_overwrite=False):
+        if not always_overwrite and backup_location.is_file():
+            write_method = 'a'
+        else: 
+            write_method = 'w'
+            
+        backup_file = open(backup_location, write_method)
+        
+        backup_file.write('>\n')
+        for clip in self._clips:
+            for event in clip._events:
+                # Write the line to the backup
+                backup_file.write(str(event) + '\n')
 
     @property
     def demo_name(self):

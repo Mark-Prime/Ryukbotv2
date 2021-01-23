@@ -6,7 +6,7 @@ def descriptions():
         "type": "string"
     },
     "output_folder": {
-        "description": 'Which folder inside of the \\tf folder to put the output video in.\nPlease only include only the folders name not the file path. \nExample: "output" NOT "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\tf\\output"',
+        "description": 'Which folder inside of the \\tf folder to put the output video in.\nPlease only include only the folder name and NOT the file path. \nExample: "output" NOT "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\tf\\output"',
         "default": "",
         "type": "string"
     },
