@@ -2,9 +2,6 @@ from pathlib import Path
 from datetime import datetime as dt
 
 class VDM:
-    date_time = str(dt.now().date()) + '_' + str(dt.now().time()) + '.txt'
-
-    
     def __init__(self, settings, clip):
         self._clips = [clip]
         self._demo_name = clip.demo_name
@@ -161,10 +158,8 @@ class VDM:
     def backup(self):
         # The location of the file we want to make
         backup_demo_location = Path((str(self._settings['backup_path']) + '\\demos\\' + self.demo_name + '.txt'))
-        backup_location = Path((str(self._settings['backup_path']) + '\\' + (VDM.date_time.replace(':', '-')).split('.')[0] + '.txt'))
 
         self.print_backup(backup_demo_location, always_overwrite=True)
-        self.print_backup(backup_location)
 
     def print_backup(self, backup_location, always_overwrite=False):
         if not always_overwrite and backup_location.is_file():

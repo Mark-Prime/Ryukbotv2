@@ -7,6 +7,7 @@ import json
 import sys
 import os
 import colorama
+from shutil import copy
 from random import randint
 from termcolor import cprint
 from ryukbot_installer import *
@@ -143,27 +144,15 @@ def empty_events(ryukbot_settings, event_file_name, event_file):
         input("Press enter to close...")
         os._exit(0)
 
-def write_backup(backup_location, events_per_demo):
-    """Prints the backups to the folders its told to
+def write_backup(backup_path, event_file):
+    # try: 
+    date_time = str(dt.now().date()) + '_' + str(dt.now().time()) + '.txt'
+    backup_location = Path((backup_path) + '\\' + (date_time.replace(':', '-')).split('.')[0] + '.txt')
 
-    Args:
-        backup_location (Path):         The path to the backup .txt file
-        events_per_demo (Array/List):     The list of events in each demo
-    """
-    try: 
-        if backup_location.is_file():
-            write_method = 'a'
-        else: 
-            write_method = 'w'
-            
-        backup_file = open(backup_location, write_method)
-        
-        backup_file.write('>\n')
-        for demo_event in events_per_demo:
-            # Write the line to the backup
-            backup_file.write('[%s] %s %s ("%s" at %s)\n' % (demo_event))
-    except:
-        print_error(ryukbot_settings, 'Error while writing backup', 343)
+    copy(event_file, backup_location)
+
+    # except:
+    #     print_error(ryukbot_settings, 'Error while writing backup', 343)
 
 def run():
     ryukbot_settings['tf_folder'], event_file_name, event_file = validate_event_file(ryukbot_settings)
@@ -177,6 +166,8 @@ def run():
         os.makedirs(Path((str(dir_path) + '\\demos\\')))
     
     ryukbot_settings['backup_path'] = dir_path
+
+    write_backup(str(dir_path), event_file)
             
     with open(event_file, 'r') as _events:
 

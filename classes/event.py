@@ -75,7 +75,6 @@ class Event:
     def apply_mod(self, mod): 
         for effect in mod.effects:
             if effect.does_effect_apply(self):
-                value = effect.value
                 split_value = self.value.split(' ')
 
                 if effect.value == '[value]':
@@ -84,7 +83,9 @@ class Event:
                     value = self.type
                 elif effect.value == '[firstvalue]':
                     value = split_value[0]
-                elif effect.type == '[lastvalue]':
+                elif effect.value == '[lastvalue]':
                     value = split_value[len(split_value) - 1]
+                else:
+                    value = effect.value
 
                 self.effects[effect.command] = value
