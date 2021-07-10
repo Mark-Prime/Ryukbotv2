@@ -25,7 +25,7 @@ def installer_text(current_setting, key):
     elif current_setting["type"] == 'integer' :
         try:
             return int(answer)
-        except:
+        except Exception:
             os.system('cls')
             cprint('Should be a number with no letters', 'red')
             return installer_text(current_setting, key)
@@ -37,7 +37,7 @@ def installer_text(current_setting, key):
                 os.system('cls')
                 cprint('Should be a 1 for yes or a 0 for no', 'red')
                 return installer_text(current_setting, key)
-        except:
+        except Exception:
             os.system('cls')
             cprint('Should be a number with no letters', 'red')
             return installer_text(current_setting, key)
@@ -62,7 +62,7 @@ def missing_setting_text(current_setting, key):
     elif current_setting["type"] == 'integer' :
         try:
             return int(answer)
-        except:
+        except Exception:
             os.system('cls')
             cprint('Should be a number with no letters', 'red')
             return missing_setting_text(current_setting, key)
@@ -74,7 +74,7 @@ def missing_setting_text(current_setting, key):
                 os.system('cls')
                 cprint('Should be a 1 for yes or a 0 for no', 'red')
                 return missing_setting_text(current_setting, key)
-        except:
+        except Exception:
             os.system('cls')
             cprint('Should be a number with no letters', 'red')
             return missing_setting_text(current_setting, key)

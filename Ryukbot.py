@@ -23,7 +23,7 @@ from classes.vdm import VDM
 # Activates the color in the console without this there would be no colors
 colorama.init()
 
-ryukbot_version = 'v2.1.0'
+ryukbot_version = 'v2.1.1'
 
 # Color Coding ruleset:
 # grey: 
@@ -151,9 +151,6 @@ def write_backup(backup_path, event_file):
 
     copy(event_file, backup_location)
 
-    # except:
-    #     print_error(ryukbot_settings, 'Error while writing backup', 343)
-
 def run():
     ryukbot_settings['tf_folder'], event_file_name, event_file = validate_event_file(ryukbot_settings)
 
@@ -237,11 +234,11 @@ def run():
         print_detail(ryukbot_settings, f'Found {len(vdm)} clip{"s" if len(vdm) > 1 else ""}', 'green', 1)
 
         if ryukbot_settings["clear_events"]:
-            cprint(f'Clearing {event_file_name}', 'yellow')
+            cprint(f'\nClearing {event_file_name}', 'yellow')
             try:
                 open(event_file, 'w+').close()
-                cprint(f'{event_file_name} cleared')
-            except:
+                cprint(f'{event_file_name} cleared', 'green')
+            except Exception:
                 print_error(ryukbot_settings, f'Error while clearing {event_file_name}', 398)
 
         cprint('\nRyukbot finished successfully', 'green')
@@ -252,7 +249,7 @@ if Path('ryukbot_settings.json').is_file():
     # Ensure that ryukbot_settings.json is set correctly
     try:
         ryukbot_settings = json.load(open('ryukbot_settings.json'))
-    except:
+    except Exception:
         print_error({"console_detail": 4}, 'Error loading ryukbot_settings.json\nYou might\'ve failed the install process.\nPlease delete ryukbot_settings.json and restart ryukbot', 195)
 
     ## Ignore this

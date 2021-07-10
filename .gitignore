@@ -12,3 +12,6 @@ debug.log
 technocrat.ico
 
 /.vscode
+
+.lsp
+.clj-kondo

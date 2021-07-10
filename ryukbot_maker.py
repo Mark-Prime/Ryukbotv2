@@ -68,7 +68,7 @@ def tick_input(event_file_name, demo_name, ticks, advanced_options):
             ticks.append(tick)
             os.system('cls')
             return tick_input(event_file_name, demo_name, ticks, advanced_options)
-    except:
+    except Exception:
         os.system('cls')
         cprint('Please only use numbers')
         return tick_input(event_file_name, demo_name, ticks, advanced_options)

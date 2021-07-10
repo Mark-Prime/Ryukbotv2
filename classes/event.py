@@ -24,7 +24,7 @@ class Event:
         
         try:
             self.validate_event()
-        except:
+        except Exception:
             print(f'Failed to validate event: {self.id}')
             
     def __str__(self):

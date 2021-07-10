@@ -95,7 +95,7 @@ class VDM:
 
         self.latest_display_name = f"{effects['output_folder']}{effects['prefix'].replace(' ', '_')}{self._demo_name}_{self.latest.start}-{self.latest.end}_{clip_type}{effects['suffix'].replace(' ', '_')}"
         self.latest.display_name = self.latest_display_name
-        return f"{commands}{effects['commands']} startmovie {self.latest.display_name} h264; clear"
+        return f"{commands}{effects['commands']}; startmovie {self.latest.display_name} h264; clear"
 
     def check_effect(self, effect, default=None):
         if effect not in self.latest.effects:
